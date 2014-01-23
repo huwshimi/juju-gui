@@ -74,7 +74,6 @@ body {
     font-size: 14px;
     line-height: 18px;
     -webkit-font-smoothing: antialiased;
-    // This won't start working until Firefox 25
     -moz-osx-font-smoothing: grayscale;
 }
 a,
@@ -860,6 +859,20 @@ g.unit {
     #loading-spinner {
         height: 100px;
     }
+}
+
+/** Projector support **/
+
+@media screen and (max-width: 1024px){
+  body {
+      zoom: 0.7;
+      /*
+      Another option is to use transform and set the width:
+      -webkit-transform: scale(0.7);
+      -webkit-transform-origin: 0 0;
+      width: 142.857143%;
+      */
+  }
 }
 
 /** Browser Setup **/
