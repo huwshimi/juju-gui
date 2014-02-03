@@ -529,7 +529,7 @@ YUI.add('juju-gui', function(Y) {
         this._renderHelpDropdownView();
       }, this);
 
-      Y.one(Y.config.win).on('resize', function(e) {
+      this.zoomMessageHandler = Y.one(Y.config.win).on('resize', function(e) {
         this._handleZoomMessage();
       }, this);
 
@@ -723,6 +723,9 @@ YUI.add('juju-gui', function(Y) {
     @method destructor
     */
     destructor: function() {
+      if (this.zoomMessageHandler) {
+        this.zoomMessageHandler.detach();
+      }
       if (this.helpDropdown) {
         this.helpDropdown.destroy();
       }
