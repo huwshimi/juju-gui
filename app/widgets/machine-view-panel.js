@@ -67,7 +67,7 @@ YUI.add('machine-view-panel', function(Y) {
          */
         handleTokenSelect: function(e) {
           var container = this.get('container'),
-              machineTokens = container.all('.machines .content ul .token'),
+              machineTokens = container.all('.machines .content .items .token'),
               selected = e.currentTarget,
               id = selected.ancestor().getData('id'),
               containers = this.get('db').machines.filterByParent(id),
@@ -117,7 +117,7 @@ YUI.add('machine-view-panel', function(Y) {
          */
         _renderContainerTokens: function(containers) {
           var containerParent = this.get('container').one(
-              '.containers .content ul');
+              '.containers .content .items');
           containerParent.get('childNodes').remove();
           if (containers.length > 0) {
             Y.Object.each(containers, function(container) {
@@ -138,7 +138,7 @@ YUI.add('machine-view-panel', function(Y) {
         _renderMachineTokens: function() {
           var container = this.get('container'),
               listContainer = container.one('.machines .content'),
-              parentNode = Y.Node.create('<ul></ul>'),
+              parentNode = listContainer.one('.items'),
               machines = this.get('db').machines.filterByParent(null);
 
           if (machines.length > 0) {
@@ -163,7 +163,7 @@ YUI.add('machine-view-panel', function(Y) {
         _renderServiceUnitTokens: function() {
           var container = this.get('container'),
               listContainer = container.one('.unplaced .content'),
-              parentNode = Y.Node.create('<ul></ul>'),
+              parentNode = listContainer.one('.items'),
               units = this.get('db').serviceUnits;
 
           if (units && units.length && units.length > 0) {
