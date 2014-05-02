@@ -60,14 +60,19 @@ YUI.add('service-scale-up-view', function(Y) {
     _updateServiceList: function() {
       var db = this.get('db');
       var services = [];
+      if (!db.services) {
+        return;
+      }
       db.services.each(function(service) {
         service = service.getAttrs();
+        if (service.pending) {
+          return;
+        }
         services.push({
           id: service.id,
           name: service.displayName,
           icon: service.icon
         });
-        console.log('_', service.displayName);
       });
       this._services = services;
       this._updateUI();
@@ -92,7 +97,6 @@ YUI.add('service-scale-up-view', function(Y) {
             name: service.name,
             icon: service.icon
           }));
-          console.log('__', service.displayName);
           newElement.setData('exists', true);
         }
       }, this);
@@ -113,15 +117,16 @@ YUI.add('service-scale-up-view', function(Y) {
 
     onActionButtonClick: function(e) {
       e.preventDefault();
-      var closed = e.currentTarget.hasClass('closed');
-      this._toggleServiceList(!closed);
+      var opened = e.currentTarget.hasClass('opened');
+      this._toggleServiceList(!opened);
     },
 
-    _toggleServiceList: function(closed) {
-      this.get('container').toggleClass('closed', closed);
+    _toggleServiceList: function(opened) {
+      this.get('container').toggleClass('opened', opened);
     },
 
     render: function() {
+      console.log('render');
       var content = this.template();
       var container = this.get('container');
       container.addClass('service-scale-up-view');
