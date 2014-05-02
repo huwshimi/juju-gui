@@ -54,10 +54,10 @@ YUI.add('service-scale-up-view', function(Y) {
     },
 
     _bindModelEvents: function() {
-      this.get('db').services.on(['add', 'remove'], this._updateServiceList);
+      this.get('db').services.on(['*:add', '*:remove', '*:change'], this._updateServiceList, this);
     },
 
-    _updateServiceList: function() {
+    _updateServiceList: function(e) {
       var db = this.get('db');
       var services = [];
       if (!db.services) {
@@ -74,6 +74,7 @@ YUI.add('service-scale-up-view', function(Y) {
           icon: service.icon
         });
       });
+
       this._services = services;
       this._updateUI();
     },
