@@ -53,10 +53,17 @@ YUI.add('machine-view-panel', function(Y) {
          * @method initializer
          */
         initializer: function() {
-          var machines = this.get('db').machines;
-          machines.after('*:change', this.render, this);
-          machines.after('add', this.render, this);
-          machines.after('remove', this.render, this);
+          this._bindModelEvents();
+        },
+
+        /**
+         * Bind the events to the models.
+         *
+         * @method _bindModelEvents
+         */
+        _bindModelEvents: function() {
+          this.get('machines').on(['*:add', '*:remove', '*:change'],
+              this._updateMachines, this);
         },
 
         /**
@@ -128,6 +135,16 @@ YUI.add('machine-view-panel', function(Y) {
               }).render();
             });
           }
+        },
+
+        /**
+         * Render the machine token widgets.
+         *
+         * @method _updateMachines
+         */
+        _updateMachines: function() {
+            console.log(this.get('machines')._items);
+            // empty container column if the selected machine is removed
         },
 
         /**
@@ -215,6 +232,7 @@ YUI.add('machine-view-panel', function(Y) {
          * @method render
          */
         render: function() {
+          console.log('render');
           var container = this.get('container');
           container.setHTML(this.template());
           container.addClass('machine-view-panel');
