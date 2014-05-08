@@ -123,7 +123,7 @@ YUI.add('machine-view-panel', function(Y) {
 
           this._clearContainerColumn();
           container.one('.containers .head .label').set('text',
-              containers.length + ' container' + plural + ', xx units');
+              containers.length + ' container' + plural + ', 0 units');
 
           if (containers.length > 0) {
             Y.Object.each(containers, function(container) {
@@ -141,11 +141,11 @@ YUI.add('machine-view-panel', function(Y) {
          *
          * @method _clearContainerColumn
          */
-        _clearContainerColumn: function(containers) {
+        _clearContainerColumn: function() {
           var container = this.get('container');
           var containerParent = container.one('.containers .content .items');
           containerParent.get('childNodes').remove();
-          container.one('.containers .head .label').set('text', '');
+          container.one('.containers .head .label').set('text', '0 containers, 0 units');
         },
 
         /**
@@ -279,6 +279,7 @@ YUI.add('machine-view-panel', function(Y) {
           this._updateMachines();
           this._renderServiceUnitTokens();
           this._renderScaleUp();
+          this._clearContainerColumn();
           return this;
         },
 
