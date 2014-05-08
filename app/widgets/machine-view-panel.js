@@ -144,7 +144,9 @@ YUI.add('machine-view-panel', function(Y) {
         _clearContainerColumn: function() {
           var container = this.get('container');
           var containerParent = container.one('.containers .content .items');
+          // Remove all the container items.
           containerParent.get('childNodes').remove();
+          // Set the header label text to the default.
           container.one('.containers .head .label').set('text', '0 containers, 0 units');
         },
 
@@ -164,17 +166,20 @@ YUI.add('machine-view-panel', function(Y) {
           var machineElements = machineList.all('li');
           var plural = machines.length !== 1 ? 's' : '';
 
+          // Update the header to show the machine count.
           container.one('.machines .head .label').set('text',
               machines.length + ' machine' + plural);
 
           machines.forEach(function(machine) {
             exists = machineElements.some(function(element) {
+              // If the machine already exists in the dom, mark it as such.
               if (String(machine.id) === element.getData('id')) {
                 element.setData('exists', true);
                 return true;
               }
             });
             if (!exists) {
+              // If the machine does not exist in the dom, render the token.
               newElement = this._renderMachineToken(machine, machineList);
               newElement.setData('exists', true);
             }
@@ -182,7 +187,12 @@ YUI.add('machine-view-panel', function(Y) {
 
           machineElements.each(function(element) {
             if (!element.getData('exists')) {
+              // If the element exists in the dom, but not in the model
+              // list then it must have been remove, so remove it from
+              // the dom.
               if (element.one('.token').hasClass('active')) {
+                // If the selected machine was removed then stop showing
+                // its containers.
                 this._clearContainerColumn();
               }
               element.remove();
@@ -190,6 +200,8 @@ YUI.add('machine-view-panel', function(Y) {
               element.remove();
               this._clearContainerColumn();
             } else {
+              // Clean up the 'exists' flag for the next loop through
+              // the machine nodes.
               element.setData('exists', undefined);
             }
           }, this);
