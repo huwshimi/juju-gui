@@ -272,7 +272,6 @@ YUI.add('machine-view-panel', function(Y) {
          * @method render
          */
         render: function() {
-          console.log('render');
           var container = this.get('container');
           container.setHTML(this.template());
           container.addClass('machine-view-panel');
