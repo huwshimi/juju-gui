@@ -77,7 +77,7 @@ YUI.add('machine-view-panel', function(Y) {
               machineTokens = container.all('.machines .content .items .token'),
               selected = e.currentTarget,
               id = selected.ancestor().getData('id'),
-              containers = this.get('db').machines.filterByParent(id);
+              containers = this.get('db').machines.filterByAncestor(id);
           e.preventDefault();
           // Select the active token.
           machineTokens.removeClass('active');
@@ -91,29 +91,39 @@ YUI.add('machine-view-panel', function(Y) {
          * @method _renderHeaders
          */
         _renderHeaders: function() {
-          var columns = this.get('container').all('.column');
+          this._machinesHeader = this._renderHeader(
+              '.column.machines .head', {
+                  title: 'Environment',
+                  action: 'New machine'
+              });
+          this._containersHeader = this._renderHeader(
+              '.column.containers .head', {
+                  action: 'New container'
+              });
+          this._unplacedHeader = this._renderHeader(
+              '.column.unplaced .head', {
+                  title: 'Unplaced units'
+              });
+        },
 
-          columns.each(function(column) {
-            var attrs = {container: column.one('.head')};
-
-            if (column.hasClass('unplaced')) {
-              attrs.title = 'Unplaced units';
-            }
-            else if (column.hasClass('machines')) {
-              attrs.title = 'Environment';
-              attrs.action = 'New machine';
-            }
-            else if (column.hasClass('containers')) {
-              attrs.action = 'New container';
-            }
-            new views.MachineViewPanelHeaderView(attrs).render();
-          });
+        /**
+         * Render a header widget.
+         *
+         * @method _renderHeader
+         * @param {String} container the column class the header will be
+         * rendered to.
+         * @param {Object} attrs the attributes to be passed to the view.
+         */
+        _renderHeader: function(container, attrs) {
+          attrs.container = this.get('container').one(container);
+          return new views.MachineViewPanelHeaderView(attrs).render();
         },
 
         /**
          * Display a list of given containers.
          *
          * @method _renderContainerTokens
+         * @param {Array} containers the list of containers to render.
          */
         _renderContainerTokens: function(containers) {
           var container = this.get('container');
@@ -121,7 +131,7 @@ YUI.add('machine-view-panel', function(Y) {
           var plural = containers.length != 1 ? 's' : '';
 
           this._clearContainerColumn();
-          container.one('.containers .head .label').set('text',
+          this._containersHeader.setLabel(
               containers.length + ' container' + plural + ', 0 units');
 
           if (containers.length > 0) {
@@ -146,7 +156,7 @@ YUI.add('machine-view-panel', function(Y) {
           // Remove all the container items.
           containerParent.get('childNodes').remove();
           // Set the header label text to the default.
-          container.one('.containers .head .label').set('text', '0 containers, 0 units');
+          this._containersHeader.setLabel('0 containers, 0 units');
         },
 
         /**
@@ -166,7 +176,7 @@ YUI.add('machine-view-panel', function(Y) {
           var plural = machines.length != 1 ? 's' : '';
 
           // Update the header to show the machine count.
-          container.one('.machines .head .label').set('text',
+          this._machinesHeader.setLabel(
               machines.length + ' machine' + plural);
 
           machines.forEach(function(machine) {
