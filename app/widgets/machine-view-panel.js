@@ -62,7 +62,7 @@ YUI.add('machine-view-panel', function(Y) {
          * @method _bindModelEvents
          */
         _bindModelEvents: function() {
-          this.get('db').machines.after(['add', 'remove', '*:change'],
+          this.get('db').machines.after(['add', 'remove'],
               this._updateMachines, this);
         },
 
