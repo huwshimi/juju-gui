@@ -180,9 +180,10 @@ YUI.add('machine-view-panel', function(Y) {
 
           machineElements.each(function(element) {
             if (!element.getData('exists')) {
+              if (element.one('.token').hasClass('active')) {
+                this._clearContainerColumn();
+              }
               element.remove();
-              // TODO: if machine is selected then:
-              //this._clearContainerColumn();
             } else {
               element.setData('exists', undefined);
             }
