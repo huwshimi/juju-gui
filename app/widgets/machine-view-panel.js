@@ -82,7 +82,6 @@ YUI.add('machine-view-panel', function(Y) {
           // Select the active token.
           machineTokens.removeClass('active');
           selected.addClass('active');
-          // Set the header text.
           this._renderContainerTokens(containers);
         },
 
