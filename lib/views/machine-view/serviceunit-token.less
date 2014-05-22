@@ -1,5 +1,6 @@
-.serviceunit-token {
-    height: 38px;
+.machine-view-panel .serviceunit-token {
+    position: relative;
+    min-height: 38px;
     margin: 10px 10px 0 10px;
     padding: 0 10px;
     border: 1px solid @machine-view-border-colour;
@@ -8,6 +9,30 @@
 
     &:last-child {
         margin-bottom: 10px;
+    }
+    &.active {
+        background-color: #eee;
+        cursor: auto;
+    }
+    input[type="text"],
+    select {
+        width: 100%;
+    }
+    input[type="text"] {
+        .border-box;
+        margin-bottom: 6px;
+        background-color: #fff;
+
+        &:last-of-type {
+            margin-bottom: 0;
+        }
+    }
+    form label {
+        position: relative;
+        float: right;
+        margin: -37px 10px 0 0;
+        color: #c6c1bb;
+        line-height: 30px;
     }
     .unplaced-unit {
         .details {
@@ -26,6 +51,22 @@
             float: right;
             margin-top: -1px;
             cursor: pointer;
+        }
+    }
+    .machines {
+        position: absolute;
+        top: 0;
+        left: 38px;
+        right: 10px;
+    }
+    .actions {
+        text-align: right;
+
+        span {
+            cursor: pointer;
+        }
+        .primary-action {
+            color: @charm-panel-orange;
         }
     }
 }

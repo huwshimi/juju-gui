@@ -57,6 +57,7 @@ YUI.add('machine-view-panel', function(Y) {
          */
         initializer: function() {
           var db = this.get('db'),
+              env = this.get('env'),
               machines = db.machines.filterByParent(null),
               machineTokens = {},
               units = db.units.filterByMachine(null),
@@ -73,7 +74,9 @@ YUI.add('machine-view-panel', function(Y) {
           this._addIconsToUnits(units);
           units.forEach(function(unit) {
             var token = new views.ServiceUnitToken({
-              unit: unit
+              unit: unit,
+              db: db,
+              env: env
             });
             unitTokens[unit.id] = token;
           });
@@ -158,7 +161,9 @@ YUI.add('machine-view-panel', function(Y) {
           this._addIconToUnit(unit);
           token = new views.ServiceUnitToken({
             container: node,
-            unit: unit
+            unit: unit,
+            db: this.get('db'),
+            env: this.get('env')
           });
           unitTokens[unit.id] = token;
           token.render();

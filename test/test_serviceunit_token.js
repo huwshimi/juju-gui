@@ -23,6 +23,7 @@ describe('Service unit token', function() {
 
   before(function(done) {
     Y = YUI(GlobalConfig).use(['juju-serviceunit-token',
+                               'juju-models',
                                'juju-tests-utils',
                                'node-event-simulate'], function(Y) {
       models = Y.namespace('juju.models');
@@ -41,8 +42,13 @@ describe('Service unit token', function() {
       unit: {
         id: 'test/0',
         displayName: 'test'
-      }
+      },
+      db: {
+        machines: new models.MachineList()
+      },
+      env: {}
     }).render();
+    view.get('db').machines.add([{id: '0'}]);
   });
 
   afterEach(function() {
@@ -78,49 +84,212 @@ describe('Service unit token', function() {
     assert.equal(setArgs[1], '{"id":"foo"}');
   });
 
-  // XXX May 10 2014 The UI is very broken so this cannot be properly tested now
-  // so it's being skipped until the token UI is fixed up.
-  // This test should also not use isTrue/isFalse etc as it doesn't give trace
-  // backs.
-  it.skip('walks through machine and container selections', function() {
-    // Make sure initally shows name and move icon
-    var name = container.one('.title'),
-        tokenMove = container.one('.token-move'),
-        machines = container.one('.unplaced-unit .machines'),
-        containers = container.one('unplaced-unit .containers'),
-        actions = container.one('.unplaced-unit .actions'),
-        machinesSelect = container.one('.unplaced-unit .machines select');
+  it('can show the machine selection', function() {
+    var machinesNode = container.one('.machines');
+    var titleNode = container.one('.title');
+    var moveNode = container.one('.token-move');
+    // Check the initial state.
+    assert.equal(container.hasClass('active'), false);
+    assert.equal(machinesNode.hasClass('hidden'), true);
+    assert.notEqual(titleNode.getStyle('display'), 'none');
+    assert.notEqual(moveNode.getStyle('display'), 'none');
+    // Show the machine selection.
+    moveNode.simulate('click');
+    assert.equal(machinesNode.hasClass('hidden'), false);
+    assert.equal(container.hasClass('active'), true);
+    assert.equal(titleNode.getStyle('display'), 'none');
+    assert.equal(moveNode.getStyle('display'), 'none');
+  });
 
-    assert.notEqual(name.getStyle('display'), 'none',
-                    'name was not displayed');
-    assert.notEqual(tokenMove.getStyle('display'), 'none',
-                    'icon was not displayed');
+  it('can populate the machines selection', function() {
+    var machinesSelect = container.one('.machines select');
+    var moveNode = container.one('.token-move');
+    assert.equal(machinesSelect.all('option').size(), 2,
+        'The defaults should exist');
+    // Show the machine selection.
+    moveNode.simulate('click');
+    var machineOptions = machinesSelect.all('option');
+    assert.equal(machineOptions.size(), 3);
+    assert.equal(machineOptions.item(2).get('value'), '0');
+  });
 
-    // test initial move icon click
-    assert.isTrue(machines.hasClass('hidden'),
-        'machine dropdown prematurely displayed');
-    tokenMove.simulate('click');
-    assert.isFalse(machinesSelect.hasClass('hidden'),
-        'machine dropdown not displayed');
-    assert.isTrue(tokenMove.hasClass('hidden'), 'icon was not hidden');
+  it('orders the machines list correctly', function() {
+    var machinesSelect = container.one('.machines select');
+    var moveNode = container.one('.token-move');
+    view.get('db').machines.add([{id: '2'}, {id: '1'}]);
+    // Show the machine selection.
+    moveNode.simulate('click');
+    var machineOptions = machinesSelect.all('option');
+    assert.equal(machineOptions.item(2).get('value'), '0');
+    assert.equal(machineOptions.item(3).get('value'), '1');
+    assert.equal(machineOptions.item(4).get('value'), '2');
+  });
 
-    // test selecting a machine in the list
-    assert.isTrue(containers.hasClass('hidden'),
-        'container dropdown prematurely displayed');
-    assert.isTrue(actions.hasClass('hidden'),
-        'container actions prematurely displayed');
+  it('can show the new machine form', function() {
+    var machinesSelect = container.one('.machines select');
+    var constraintsNode = container.one('.constraints');
+    var containersNode = container.one('.containers');
+    var newMachineNode = container.one('.new-machine');
+    var actionsNode = container.one('.actions');
+    // Check the initial state.
+    assert.equal(containersNode.hasClass('hidden'), true);
+    assert.equal(newMachineNode.hasClass('hidden'), true);
+    assert.equal(constraintsNode.hasClass('hidden'), true);
+    assert.equal(actionsNode.hasClass('hidden'), true);
+    // Select the 'New machine' option.
     machinesSelect.set('selectedIndex', 1);
     machinesSelect.simulate('change');
-    assert.isFalse(containers.hasClass('hidden'),
-        'container dropdown not displayed');
-    assert.isFalse(actions.hasClass('hidden'),
-        'container actions not displayed');
+    assert.equal(containersNode.hasClass('hidden'), true);
+    assert.equal(newMachineNode.hasClass('hidden'), false);
+    assert.equal(constraintsNode.hasClass('hidden'), false);
+    assert.equal(actionsNode.hasClass('hidden'), false);
+  });
 
-    // test the final click on the move button
-    actions.one('.move').simulate('click');
-    assert.isTrue(name.hasClass('hidden'),
-        'name was not displayed in final state');
-    assert.isTrue(tokenMove.hasClass('hidden'),
-        'icon was not displayed in final state');
+  it('can show the container selection', function() {
+    var machinesSelect = container.one('.machines select');
+    var constraintsNode = container.one('.constraints');
+    var containersNode = container.one('.containers');
+    var newMachineNode = container.one('.new-machine');
+    var actionsNode = container.one('.actions');
+    // Check the initial state.
+    assert.equal(containersNode.hasClass('hidden'), true);
+    assert.equal(newMachineNode.hasClass('hidden'), true);
+    assert.equal(constraintsNode.hasClass('hidden'), true);
+    assert.equal(actionsNode.hasClass('hidden'), true);
+    // Select a machine option.
+    machinesSelect.set('selectedIndex', 2);
+    machinesSelect.simulate('change');
+    assert.equal(containersNode.hasClass('hidden'), false);
+    assert.equal(newMachineNode.hasClass('hidden'), true);
+    assert.equal(constraintsNode.hasClass('hidden'), true);
+    assert.equal(actionsNode.hasClass('hidden'), false);
+  });
+
+  it('hides the container list/new machine form on machine selection changed',
+      function() {
+        var machinesSelect = container.one('.machines select');
+        var constraintsNode = container.one('.constraints');
+        var containersNode = container.one('.containers');
+        var newMachineNode = container.one('.new-machine');
+        // Select a machine option.
+        machinesSelect.set('selectedIndex', 2);
+        machinesSelect.simulate('change');
+        assert.equal(containersNode.hasClass('hidden'), false);
+        assert.equal(newMachineNode.hasClass('hidden'), true);
+        assert.equal(constraintsNode.hasClass('hidden'), true);
+        // Select the 'New machine' option.
+        machinesSelect.set('selectedIndex', 1);
+        machinesSelect.simulate('change');
+        assert.equal(containersNode.hasClass('hidden'), true);
+        assert.equal(newMachineNode.hasClass('hidden'), false);
+        assert.equal(constraintsNode.hasClass('hidden'), false);
+      });
+
+  it('can populate the containers selection', function() {
+    var machinesSelect = container.one('.machines select');
+    var containersSelect = container.one('.containers select');
+    var selectedMachineStub = utils.makeStubMethod(view,
+        '_getSelectedMachine', '0');
+    this._cleanups.push(selectedMachineStub.reset);
+    view.get('db').machines.add([{id: '0/lxc/1'}]);
+    assert.equal(containersSelect.all('option').size(), 3,
+        'The defaults should exist');
+    // Select a machine option.
+    machinesSelect.simulate('change');
+    var containerOptions = containersSelect.all('option');
+    assert.equal(containerOptions.size(), 5);
+    assert.equal(containerOptions.item(1).get('value'), '0/lxc/1');
+    // Check the bare metal option has been created at the top of the list.
+    assert.equal(containerOptions.item(0).get('value'), 'bare-metal');
+    assert.equal(containerOptions.item(0).get('text'), '0/bare metal');
+  });
+
+  it('orders the containers list correctly', function() {
+    var machinesSelect = container.one('.machines select');
+    var containersSelect = container.one('.containers select');
+    var selectedMachineStub = utils.makeStubMethod(view,
+        '_getSelectedMachine', '0');
+    this._cleanups.push(selectedMachineStub.reset);
+    view.get('db').machines.add([
+      {id: '0/lxc/1'},
+      {id: '0/lxc/3'},
+      {id: '0/lxc/2'}
+    ]);
+    // Select a machine option.
+    machinesSelect.simulate('change');
+    var containerOptions = containersSelect.all('option');
+    assert.equal(containerOptions.item(1).get('value'), '0/lxc/1');
+    assert.equal(containerOptions.item(2).get('value'), '0/lxc/2');
+    assert.equal(containerOptions.item(3).get('value'), '0/lxc/3');
+  });
+
+  it('shows the constraints for a new kvm container', function() {
+    var containersSelect = container.one('.containers select');
+    var constraintsNode = container.one('.constraints');
+    // Check the initial state.
+    assert.equal(constraintsNode.hasClass('hidden'), true);
+    // Select the kvm option.
+    containersSelect.set('selectedIndex', 2);
+    containersSelect.simulate('change');
+    assert.equal(constraintsNode.hasClass('hidden'), false);
+  });
+
+  it('does not show the constraints for non kvm containers', function() {
+    var containersSelect = container.one('.containers select');
+    var constraintsNode = container.one('.constraints');
+    // Check the initial state.
+    assert.equal(constraintsNode.hasClass('hidden'), true);
+    // Select a non kvm option.
+    containersSelect.set('selectedIndex', 1);
+    containersSelect.simulate('change');
+    assert.equal(constraintsNode.hasClass('hidden'), true);
+  });
+
+  it('hides constraints if the container is changed from kvm', function() {
+    var containersSelect = container.one('.containers select');
+    var constraintsNode = container.one('.constraints');
+    // Select the kvm option.
+    containersSelect.set('selectedIndex', 2);
+    containersSelect.simulate('change');
+    assert.equal(constraintsNode.hasClass('hidden'), false);
+    // Select a non kvm option.
+    containersSelect.set('selectedIndex', 1);
+    containersSelect.simulate('change');
+    assert.equal(constraintsNode.hasClass('hidden'), true);
+  });
+
+  it('resets the token on cancel', function() {
+    var cancelNode = container.one('.actions .cancel');
+    var machinesSelect = container.one('.machines select');
+    var constraintsNode = container.one('.constraints');
+    var newMachineNode = container.one('.new-machine');
+    var actionsNode = container.one('.actions');
+    var moveNode = container.one('.token-move');
+    var titleNode = container.one('.title');
+    // Show the machine selection.
+    moveNode.simulate('click');
+    // Select the 'New machine' option.
+    machinesSelect.set('selectedIndex', 1);
+    machinesSelect.simulate('change');
+    assert.equal(container.hasClass('active'), true);
+    assert.equal(titleNode.getStyle('display'), 'none');
+    assert.equal(moveNode.getStyle('display'), 'none');
+    assert.equal(newMachineNode.hasClass('hidden'), false);
+    assert.equal(constraintsNode.hasClass('hidden'), false);
+    assert.equal(actionsNode.hasClass('hidden'), false);
+    // Cancel the move.
+    cancelNode.simulate('click');
+    // Need to get new references to the nodes as they've been recreated.
+    constraintsNode = container.one('.constraints');
+    newMachineNode = container.one('.new-machine');
+    actionsNode = container.one('.actions');
+    moveNode = container.one('.token-move');
+    titleNode = container.one('.title');
+    assert.equal(container.hasClass('active'), false);
+    assert.notEqual(titleNode.getStyle('display'), 'none');
+    assert.notEqual(moveNode.getStyle('display'), 'none');
+    assert.equal(newMachineNode.hasClass('hidden'), true);
+    assert.equal(constraintsNode.hasClass('hidden'), true);
+    assert.equal(actionsNode.hasClass('hidden'), true);
   });
 });

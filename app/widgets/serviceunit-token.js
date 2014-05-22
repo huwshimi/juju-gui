@@ -41,14 +41,20 @@ YUI.add('juju-serviceunit-token', function(Y) {
     template: Templates['serviceunit-token'],
 
     events: {
-      '.unit .token-move': {
+      '.unplaced-unit .token-move': {
         click: '_handleStartMove'
       },
-      '.unit .machines select': {
+      '.unplaced-unit .machines select': {
         change: '_handleMachineSelection'
       },
-      '.unit .actions .move': {
+      '.unplaced-unit .containers select': {
+        change: '_handleContainerSelection'
+      },
+      '.unplaced-unit .actions .move': {
         click: '_handleFinishMove'
+      },
+      '.unplaced-unit .actions .cancel': {
+        click: '_handleCancel'
       }
     },
 
@@ -61,8 +67,11 @@ YUI.add('juju-serviceunit-token', function(Y) {
     _handleStartMove: function(e) {
       e.preventDefault();
       var container = this.get('container');
+      this._populateMachines();
+      container.addClass('active');
       container.one('.token-move').hide();
-      container.one('.machines').show();
+      container.one('.title').hide();
+      container.one('.machines').removeClass('hidden');
     },
 
     /**
@@ -73,23 +82,209 @@ YUI.add('juju-serviceunit-token', function(Y) {
      */
     _handleFinishMove: function(e) {
       e.preventDefault();
+      var env = this.get('env');
+      var db = this.get('db');
+      var unitId = this.get('unit').id;
+      var unit = db.units.getById(unitId);
       var container = this.get('container');
-      container.one('.token-move').show();
-      container.all('.machines, .containers, .actions').hide();
+      var machineValue = this._getSelectedMachine();
+      var containerValue = this._getSelectedContainer();
+      var constraintsForm = container.one('.constraints');
+      var constraints = {};
+      var placeId;
+      var machine;
+
+      if (machineValue === 'new' || containerValue === 'new-kvm') {
+        constraints.cpu = constraintsForm.one('input[name="cpu"]');
+        constraints.ram = constraintsForm.one('input[name="ram"]');
+        constraints.disk = constraintsForm.one('input[name="disk"]');
+      }
+
+      if (machineValue === 'new') {
+        // Create a new machine.
+        // XXX set constraints
+        machine = this._createMachine(undefined, null);
+        placeId = machine.id;
+      } else if (!containerValue) {
+        // Do nothing, the user has not yet selected a container.
+        return;
+      } else if (containerValue === 'new-kvm' || containerValue === 'new-lxc') {
+        //if (containerValue === 'new-kvm') {
+        //  XXX set constraints
+        //}
+        machine = this._createMachine(containerValue.split('-')[1],
+            machineValue);
+        placeId = machine.id;
+      } else if (containerValue === 'bare-metal') {
+        placeId = machineValue;
+      } else {
+        // Add the unit to the container.
+        placeId = containerValue;
+      }
+      // Place the unit onto the existing or newly created machine/container.
+      env.placeUnit(unit, placeId);
       this.fire('moveToken');
+      // The unit has been placed, remove it.
+      this.destroy();
+    },
+
+    /**
+     * Create a new machine/container.
+     *
+     * @method _createMachine
+     * @param {String} containerType The container type to create.
+     * @param {String} parentId The parent for the container.
+     */
+    _createMachine: function(containerType, parentId) {
+      var machine = this.get('env').addMachines([{
+        containerType: containerType,
+        parentId: parentId
+        // XXX A callback param MUST be provided even if it's just an
+        // empty function, the ECS relies on wrapping this function so if
+        // it's null it'll just stop executing. This should probably be
+        // handled properly on the ECS side. Jeff May 12 2014
+        // The comment above copied from _unitTokenDropHandler
+        // in machine-view-panel.js.
+      }], function() {}, { modelId: null });
+      return machine;
+    },
+
+    /**
+     * Handles clicks on the cancel action.
+     *
+     * @method _handleCancel
+     * @param {Y.Event} e EventFacade object.
+     */
+    _handleCancel: function(e) {
+      e.preventDefault();
+      var container = this.get('container');
+      // In lieu of resetting every element, just re-render the HTML.
+      container.setHTML(this.template(this.get('unit')));
+      // Remove the active class
+      container.removeClass('active');
     },
 
     /**
      * Handles changes to the machine selection
      *
-     * @method _machineSelectionHandler
+     * @method _handleMachineSelection
      * @param {Y.Event} e EventFacade object.
      */
     _handleMachineSelection: function(e) {
       e.preventDefault();
       var container = this.get('container');
-      container.one('.containers').show();
-      container.one('.actions').show();
+      var machineValue = this._getSelectedMachine();
+
+      if (machineValue === 'new') {
+        container.one('.new-machine').removeClass('hidden');
+        container.one('.constraints').removeClass('hidden');
+        // Hide the containers in case the machine has changed.
+        container.one('.containers').addClass('hidden');
+      } else {
+        this._populateContainers(machineValue);
+        container.one('.containers').removeClass('hidden');
+        // Hide the new machine form in case the machine has changed.
+        container.one('.new-machine').addClass('hidden');
+        container.one('.constraints').addClass('hidden');
+      }
+      container.one('.actions').removeClass('hidden');
+    },
+
+    /**
+     * Handles changes to the container selection
+     *
+     * @method _handleContainerSelection
+     * @param {Y.Event} e EventFacade object.
+     */
+    _handleContainerSelection: function(e) {
+      e.preventDefault();
+      var container = this.get('container');
+      var containerValue = this._getSelectedContainer();
+
+      if (containerValue === 'new-kvm') {
+        container.one('.constraints').removeClass('hidden');
+      }
+      else {
+        // Hide the constraints in case the container has been changed.
+        container.one('.constraints').addClass('hidden');
+      }
+    },
+
+    /**
+      Get the selected machine.
+
+      @method _getSelectedMachine
+    */
+    _getSelectedMachine: function(e) {
+      return this.get('container').one('.machines select').get('value');
+    },
+
+    /**
+      Get the selected container.
+
+      @method _getSelectedContainer
+    */
+    _getSelectedContainer: function(e) {
+      return this.get('container').one('.containers select').get('value');
+    },
+
+    /**
+      Populate the select with the current machines.
+
+      @method _populateMachines
+    */
+    _populateMachines: function() {
+      var machinesSelect = this.get('container').one('.machines select');
+      var machines = this.get('db').machines.filterByParent(null);
+      // Remove current machines. Leave the default options.
+      machinesSelect.all('option:not(.default)').remove();
+      // Sort machines by id.
+      machines.sort(function(obj1, obj2) {
+        return obj1.id - obj2.id;
+      });
+      // Add all the machines to the select
+      machines.forEach(function(machine) {
+        machinesSelect.append(this._createMachineOption(machine));
+      }, this);
+    },
+
+    /**
+      Populate the select with the current containers.
+
+      @method _populateContainers
+      @param {String} parentID A machine id
+    */
+    _populateContainers: function(parentId) {
+      var containersSelect = this.get('container').one('.containers select');
+      var containers = this.get('db').machines.filterByParent(parentId);
+      // Remove current containers. Leave the default options.
+      containersSelect.all('option:not(.default)').remove();
+      // Sort containers by id.
+      containers.sort(function(obj1, obj2) {
+        // Need to reverse the order as the order will be reversed again
+        // when the items are prepended, no appended.
+        return obj2.id.split('/')[2] - obj1.id.split('/')[2];
+      });
+      // Add all the containers to the select.
+      containers.forEach(function(container) {
+        containersSelect.prepend(this._createMachineOption(container));
+      }, this);
+      // Add the bare metal container to the top of the list.
+      containersSelect.prepend(this._createMachineOption(
+          {displayName: parentId + '/bare metal', id: 'bare-metal'}));
+    },
+
+    /**
+      Create an option for a machine or container.
+
+      @method _createMachineOption
+      @param {Object} machine A machine object
+    */
+    _createMachineOption: function(machine) {
+      var option = Y.Node.create('<option></option>');
+      option.set('value', machine.id);
+      option.set('text', machine.displayName);
+      return option;
     },
 
     /**
@@ -159,6 +354,15 @@ YUI.add('juju-serviceunit-token', function(Y) {
       return this;
     },
 
+    /**
+      Removes the view container and all its contents.
+
+      @method destructor
+    */
+    destructor: function() {
+      this.get('container').remove();
+    },
+
     ATTRS: {
       /**
         The Node instance that contains this token.
@@ -174,7 +378,23 @@ YUI.add('juju-serviceunit-token', function(Y) {
         @attribute unit
         @type {Object}
        */
-      unit: {}
+      unit: {},
+
+      /**
+        Reference to the application db
+
+        @attribute db
+        @type {Object}
+       */
+      db: {},
+
+      /**
+        Reference to the application env
+
+        @attribute env
+        @type {Object}
+       */
+      env: {}
     }
   });
 
