@@ -41,13 +41,13 @@ YUI.add('juju-serviceunit-token', function(Y) {
     template: Templates['serviceunit-token'],
 
     events: {
-      '.unit .token-move': {
+      '.unplaced-unit .token-move': {
         click: '_handleStartMove'
       },
-      '.unit .machines select': {
+      '.unplaced-unit .machines select': {
         change: '_handleMachineSelection'
       },
-      '.unit .actions .move': {
+      '.unplaced-unit .actions .move': {
         click: '_handleFinishMove'
       }
     },
@@ -61,8 +61,11 @@ YUI.add('juju-serviceunit-token', function(Y) {
     _handleStartMove: function(e) {
       e.preventDefault();
       var container = this.get('container');
+      this._populateMachines();
+      container.addClass('active');
       container.one('.token-move').hide();
-      container.one('.machines').show();
+      container.one('.title').hide();
+      container.one('.machines').removeClass('hidden');
     },
 
     /**
@@ -88,8 +91,60 @@ YUI.add('juju-serviceunit-token', function(Y) {
     _handleMachineSelection: function(e) {
       e.preventDefault();
       var container = this.get('container');
-      container.one('.containers').show();
-      container.one('.actions').show();
+      var machineId = this.get('container').one(
+          '.machines select option:checked').get('value');
+      this._populateContainers(machineId);
+      container.one('.containers').removeClass('hidden');
+      container.one('.actions').removeClass('hidden');
+    },
+
+    /**
+      Populate the select with the current machines.
+
+      @method _populateMachines
+    */
+    _populateMachines: function() {
+      var machinesSelect = this.get('container').one('.machines select');
+      var machines = this.get('db').machines.filterByParent(null);
+      // Remove current machines. Leave the default options.
+      machinesSelect.all('option:not(.default)').remove();
+      // Add all the machines to the select
+      machines.forEach(function(machine) {
+        machinesSelect.append(this._createMachineOption(machine));
+      }, this);
+    },
+
+    /**
+      Populate the select with the current containers.
+
+      @method _populateContainers
+      @param {String} parentID A machine id
+    */
+    _populateContainers: function(parentId) {
+      var containersSelect = this.get('container').one('.containers select');
+      var containers = this.get('db').machines.filterByParent(parentId);
+      // Remove current containers. Leave the default options.
+      containersSelect.all('option:not(.default)').remove();
+      // Add all the containers to the select.
+      containers.forEach(function(container) {
+        containersSelect.prepend(this._createMachineOption(container));
+      }, this);
+      // Add the bare metal container to the top of the list.
+      containersSelect.prepend(this._createMachineOption(
+          {displayName: parentId + '/bare metal', id: ''}));
+    },
+
+    /**
+      Create an option for a machine or container.
+
+      @method _createMachineOption
+      @param {Object} machine A machine object
+    */
+    _createMachineOption: function(machine) {
+      var option = Y.Node.create('<option></option>');
+      option.set('value', machine.id);
+      option.set('text', machine.displayName);
+      return option;
     },
 
     /**
@@ -175,6 +230,14 @@ YUI.add('juju-serviceunit-token', function(Y) {
         @type {Object}
        */
       unit: {}
+
+      /**
+        Reference to the application db
+
+        @attribute db
+        @type {Object}
+       */
+      db: {},
     }
   });
 

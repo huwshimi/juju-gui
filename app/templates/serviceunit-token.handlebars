@@ -1,5 +1,4 @@
 <div class="unplaced-unit">
-  <div class="main">
   <span class="unit-icon">
     <img src="{{icon}}" alt="{{displayName}}">
   </span>
@@ -9,28 +8,25 @@
   <span class="token-move">
     <i class="sprite mv-placement-arrow"></i>
   </span>
-  </div>
-  <!-- XXX these HTML selects (machines and containers) will likely need to be
-       generated dynamically, rather than show/hidden -->
   <div class="machines hidden">
-    <select placeholder="Move to&#8230;">
-      <option value="new">New machine</option>
-      {{#each machines}}
-      <option value="{{id}}">{{displayName}}</option>
-      {{/each}}
+    <select>
+      <option value="" selected disabled class="hidden default">
+        Move to&hellip;
+      </option>
+      <option value="new" class="default">New machine</option>
     </select>
   </div>
   <div class="containers hidden">
-    <select placeholder="Choose location">
-      {{#each containers}}
-      <option value="{{id}}">{{displayName}}</option>
-      {{/each}}
-      <option value="new-lxc">new lxc</option>
-      <option value="new-kvm">new kvm</option>
+    <select>
+      <option value="" selected disabled class="hidden default">
+        Choose location
+      </option>
+      <option value="new-lxc" class="default">new lxc</option>
+      <option value="new-kvm" class="default">new kvm</option>
     </select>
   </div>
   <div class="actions hidden">
-    <span class="cancel secondary-action">Cancel</span>
+    <span class="cancel secondary-action">Cancel</span> |
     <span class="move primary-action">Move</span>
   </div>
 </div>
