@@ -1,4 +1,4 @@
-.serviceunit-token {
+.machine-view-panel .serviceunit-token {
     position: relative;
     min-height: 38px;
     margin: 10px 10px 0 10px;
@@ -14,8 +14,25 @@
         background-color: #eee;
         cursor: pointer;
     }
+    input[type="text"],
     select {
         width: 100%;
+    }
+    input[type="text"] {
+        .border-box;
+        margin-bottom: 6px;
+        background-color: #fff;
+
+        &:last-of-type {
+            margin-bottom: 0;
+        }
+    }
+    form label {
+        position: relative;
+        float: right;
+        margin: -37px 10px 0 0;
+        color: #c6c1bb;
+        line-height: 30px;
     }
     .unplaced-unit {
         .details {

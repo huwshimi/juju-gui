@@ -110,10 +110,20 @@ YUI.add('juju-serviceunit-token', function(Y) {
     _handleMachineSelection: function(e) {
       e.preventDefault();
       var container = this.get('container');
-      var machineId = this.get('container').one(
+      var machineValue = this.get('container').one(
           '.machines select option:checked').get('value');
-      this._populateContainers(machineId);
-      container.one('.containers').removeClass('hidden');
+      // Hide both options in case the machine has been changed.
+      container.one('.containers').addClass('hidden');
+      container.one('.new-machine').addClass('hidden');
+      container.one('.constraints').addClass('hidden');
+
+      if (machineValue === 'new') {
+        container.one('.new-machine').removeClass('hidden');
+        container.one('.constraints').removeClass('hidden');
+      } else {
+        this._populateContainers(machineValue);
+        container.one('.containers').removeClass('hidden');
+      }
       container.one('.actions').removeClass('hidden');
     },
 

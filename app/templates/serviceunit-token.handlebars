@@ -16,6 +16,9 @@
       <option value="new" class="default">New machine</option>
     </select>
   </div>
+  <div class="new-machine hidden">
+    Define constaints
+  </div>
   <div class="containers hidden">
     <select>
       <option value="" selected disabled class="hidden default">
@@ -25,6 +28,14 @@
       <option value="new-kvm" class="default">new kvm</option>
     </select>
   </div>
+  <form class="constraints hidden">
+    <input type="text" name="cpu">
+    <label>CPU (GHz)</label>
+    <input type="text" name="ram">
+    <label>RAM (GB)</label>
+    <input type="text" name="disk">
+    <label>Disk (TB)</label>
+  </form>
   <div class="actions hidden">
     <span class="cancel secondary-action">Cancel</span> |
     <span class="move primary-action">Move</span>
