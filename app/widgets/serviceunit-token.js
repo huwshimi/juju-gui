@@ -83,9 +83,38 @@ YUI.add('juju-serviceunit-token', function(Y) {
     _handleFinishMove: function(e) {
       e.preventDefault();
       var container = this.get('container');
-      container.one('.token-move').show();
-      container.one('.actions').addClass('hidden');
+      var machineValue = container.one(
+          '.machines select option:checked').get('value');
+      var containerValue = this.get('container').one(
+          '.containers select option:checked').get('value');
+      var constraintsForm = container.one('.constraints');
+      var constraints = {};
+
+      if (machineValue === 'new' || containerValue === 'new-kvm') {
+        constraints.cpu = constraintsForm.one('input[name="cpu"]');
+        constraints.ram = constraintsForm.one('input[name="ram"]');
+        constraints.disk = constraintsForm.one('input[name="disk"]');
+      }
+
+      if (machineValue === 'new') {
+        // Create a new machine using the constraints data.
+      } else if (!containerValue) {
+        // Do nothing, the user has not selected a container.
+        return;
+      } else if (containerValue === 'new-kvm') {
+        // Create a new KVM container using the constraints data.
+        // The machine will be 'machineValue'
+      } else if (containerValue === 'new-lxc') {
+        // Create a new LXC container.
+        // The machine will be 'machineValue'
+      } else {
+        // Add the unit to the container.
+        // The machine will be 'machineValue'
+        // The container will be 'containerValue'
+      }
       this.fire('moveToken');
+      // The unit has been placed, remove it.
+      this.destroy();
     },
 
     /**
@@ -273,6 +302,15 @@ YUI.add('juju-serviceunit-token', function(Y) {
       token.setAttribute('data-id', unit.id);
       this._makeDraggable();
       return this;
+    },
+
+    /**
+      Removes the view container and all its contents.
+
+      @method destructor
+    */
+    destructor: function() {
+      this.get('container').remove();
     },
 
     ATTRS: {
