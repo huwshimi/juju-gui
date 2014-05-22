@@ -49,6 +49,9 @@ YUI.add('juju-serviceunit-token', function(Y) {
       },
       '.unplaced-unit .actions .move': {
         click: '_handleFinishMove'
+      },
+      '.unplaced-unit .actions .cancel': {
+        click: '_handleCancel'
       }
     },
 
@@ -78,8 +81,24 @@ YUI.add('juju-serviceunit-token', function(Y) {
       e.preventDefault();
       var container = this.get('container');
       container.one('.token-move').show();
-      container.all('.machines, .containers, .actions').hide();
+      container.one('.actions').addClass('hidden');
       this.fire('moveToken');
+    },
+
+    /**
+     * Handles clicks on the cancel action.
+     *
+     * @method _handleCancel
+     * @param {Y.Event} e EventFacade object.
+     */
+    _handleCancel: function(e) {
+      e.preventDefault();
+      var container = this.get('container'),
+          attrs = this.getAttrs();
+      // In lieu of resetting every element, just re-render the html.
+      container.setHTML(this.template(attrs));
+      // Remove the active class
+      container.removeClass('active');
     },
 
     /**
@@ -108,6 +127,10 @@ YUI.add('juju-serviceunit-token', function(Y) {
       var machines = this.get('db').machines.filterByParent(null);
       // Remove current machines. Leave the default options.
       machinesSelect.all('option:not(.default)').remove();
+      // Sort machines by id.
+      machines.sort(function(obj1, obj2) {
+        return obj1.id - obj2.id;
+      });
       // Add all the machines to the select
       machines.forEach(function(machine) {
         machinesSelect.append(this._createMachineOption(machine));
@@ -125,6 +148,12 @@ YUI.add('juju-serviceunit-token', function(Y) {
       var containers = this.get('db').machines.filterByParent(parentId);
       // Remove current containers. Leave the default options.
       containersSelect.all('option:not(.default)').remove();
+      // Sort containers by id.
+      containers.sort(function(obj1, obj2) {
+        // Need to reverse the order as the order will be reversed again
+        // when the items are prepended, no appended.
+        return obj2.id.split('/')[2] - obj1.id.split('/')[2];
+      });
       // Add all the containers to the select.
       containers.forEach(function(container) {
         containersSelect.prepend(this._createMachineOption(container));
