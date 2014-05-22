@@ -47,6 +47,9 @@ YUI.add('juju-serviceunit-token', function(Y) {
       '.unplaced-unit .machines select': {
         change: '_handleMachineSelection'
       },
+      '.unplaced-unit .containers select': {
+        change: '_handleContainerSelection'
+      },
       '.unplaced-unit .actions .move': {
         click: '_handleFinishMove'
       },
@@ -104,7 +107,7 @@ YUI.add('juju-serviceunit-token', function(Y) {
     /**
      * Handles changes to the machine selection
      *
-     * @method _machineSelectionHandler
+     * @method _handleMachineSelection
      * @param {Y.Event} e EventFacade object.
      */
     _handleMachineSelection: function(e) {
@@ -125,6 +128,25 @@ YUI.add('juju-serviceunit-token', function(Y) {
         container.one('.containers').removeClass('hidden');
       }
       container.one('.actions').removeClass('hidden');
+    },
+
+    /**
+     * Handles changes to the container selection
+     *
+     * @method _handleContainerSelection
+     * @param {Y.Event} e EventFacade object.
+     */
+    _handleContainerSelection: function(e) {
+      e.preventDefault();
+      var container = this.get('container');
+      var containerValue = this.get('container').one(
+          '.containers select option:checked').get('value');
+      // Hide the constraints in case the container has been changed.
+      container.one('.constraints').addClass('hidden');
+
+      if (containerValue === 'new-kvm') {
+        container.one('.constraints').removeClass('hidden');
+      }
     },
 
     /**
