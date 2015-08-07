@@ -38,6 +38,11 @@
                 </span>
             </a>
         </li>
+        {{# if bypassECS }}
+          <li>
+              WARNING: changes will be committed immediately.
+          </li>
+        {{/if}}
         <li class="change">
           <i class="sprite {{ changeNotification.icon }}"></i>
           {{ changeNotification.description }}

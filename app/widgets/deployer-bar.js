@@ -140,6 +140,7 @@ YUI.add('deployer-bar', function(Y) {
           ecs = this.get('ecs');
       var changes = this._getChangeCount(ecs);
       container.setHTML(this.template({
+        bypassECS: localStorage.getItem('bypass-ecs') || false,
         changeCount: changes,
         deployed: this._deployed
       }));
