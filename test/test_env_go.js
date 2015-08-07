@@ -565,6 +565,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
       });
     });
 
+    it('adds a unit immediately', function() {
+      var _add_unit = utils.makeStubMethod(env, '_add_unit');
+      this._cleanups.push(_add_unit.reset);
+      env.add_unit('django', 1, '42', null, {immediate: true});
+      assert.equal(_add_unit.calledOnce(), true);
+    });
+
     it('sends the correct DestroyServiceUnits message', function() {
       env.remove_units(['django/2', 'django/3'], null, {immediate: true});
       var last_message = conn.last_message();
@@ -601,6 +608,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
         RequestId: 1,
         Error: 'unit django/2 does not exist'
       });
+    });
+
+    it('removes a unit immediately', function() {
+      var _remove_units = utils.makeStubMethod(env, '_remove_units');
+      this._cleanups.push(_remove_units.reset);
+      env.remove_units(['django/2'], null, {immediate: true});
+      assert.equal(_remove_units.calledOnce(), true);
     });
 
 
@@ -862,6 +876,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
       assert.equal(err, 'service "mysql" not found');
     });
 
+    it('exposes a service immediately', function() {
+      var _expose = utils.makeStubMethod(env, '_expose');
+      this._cleanups.push(_expose.reset);
+      env.expose('mysql', null, {immediate: true});
+      assert.equal(_expose.calledOnce(), true);
+    });
+
     it('sends the correct unexpose message', function() {
       env.unexpose('apache', function() {}, {immediate: true});
       var last_message = conn.last_message();
@@ -904,6 +925,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
       });
       assert.equal(err, 'service "mysql" not found');
       assert.equal(service_name, 'mysql');
+    });
+
+    it('unexposes a service immediately', function() {
+      var _unexpose = utils.makeStubMethod(env, '_unexpose');
+      this._cleanups.push(_unexpose.reset);
+      env.unexpose('apache', function() {}, {immediate: true});
+      assert.equal(_unexpose.calledOnce(), true);
     });
 
     it('successfully deploys a service', function() {
@@ -1035,6 +1063,14 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
       assert.equal(charm_url, 'precise/mysql');
       assert.isUndefined(err);
       assert.equal(service_name, 'mysql');
+    });
+
+    it('successfully deploys a service immediately', function() {
+      var _deploy = utils.makeStubMethod(env, '_deploy');
+      this._cleanups.push(_deploy.reset);
+      env.deploy('precise/mediawiki', null, null, null, 1, null, null,
+          null, {immediate: true});
+      assert.equal(_deploy.calledOnce(), true);
     });
 
     it('handles failed service deploy', function() {
@@ -1218,6 +1254,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
       assert.deepEqual(conn.last_message(), expectedMsg);
     };
 
+    it('adds a machine immediately', function() {
+      var _addMachines = utils.makeStubMethod(env, '_addMachines');
+      this._cleanups.push(_addMachines.reset);
+      env.addMachines([{}], null, {immediate: true});
+      assert.equal(_addMachines.calledOnce(), true);
+    });
+
     it('removes a machine', function() {
       env.destroyMachines(['1'], null, null, {immediate: true});
       assertDestroyMachinesRequestSent(['1'], false);
@@ -1269,6 +1312,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
       conn.msg({RequestId: 1, Error: 'bad wolf', Response: {}});
       assert.strictEqual(response.err, 'bad wolf');
       assert.deepEqual(response.names, ['1']);
+    });
+
+    it('destroys a machine immediately', function() {
+      var _destroyMachines = utils.makeStubMethod(env, '_destroyMachines');
+      this._cleanups.push(_destroyMachines.reset);
+      env.destroyMachines(['1'], null, null, {immediate: true});
+      assert.equal(_destroyMachines.calledOnce(), true);
     });
 
     it('sends the correct get_annotations message', function() {
@@ -1644,6 +1694,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
           newConfig, {key1: 'value1', key2: 'CHANGED!', key3: 'value3'});
     });
 
+    it('sets the config immediately', function() {
+      var _set_config = utils.makeStubMethod(env, '_set_config');
+      this._cleanups.push(_set_config.reset);
+      env.set_config('mysql', {}, null, {}, null, {immediate: true});
+      assert.equal(_set_config.calledOnce(), true);
+    });
+
     it('can destroy a service', function() {
       var service_name = '';
       env.destroy_service('mysql', function(evt) {
@@ -1679,6 +1736,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
       });
       assert.equal(err, 'service "yoursql" not found');
       assert.equal(service_name, 'yoursql');
+    });
+
+    it('destroys a service immediately', function() {
+      var _destroyService = utils.makeStubMethod(env, '_destroyService');
+      this._cleanups.push(_destroyService.reset);
+      env.destroy_service('mysql', null, {immediate: true});
+      assert.equal(_destroyService.calledOnce(), true);
     });
 
     it('sends the correct AddRelation message', function() {
@@ -1749,6 +1813,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
       assert.equal(evt.endpoint_b, 'wordpress:website');
     });
 
+    it('adds a relation immediately', function() {
+      var _add_relation = utils.makeStubMethod(env, '_add_relation');
+      this._cleanups.push(_add_relation.reset);
+      env.add_relation(null, null, null, {immediate: true});
+      assert.equal(_add_relation.calledOnce(), true);
+    });
+
     it('sends the correct DestroyRelation message', function() {
       endpointA = ['mysql', {name: 'database'}];
       endpointB = ['wordpress', {name: 'website'}];
@@ -1809,6 +1880,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
       assert.equal(endpoint_a, 'yoursql:database');
       assert.equal(endpoint_b, 'wordpress:website');
       assert.equal(err, 'service "yoursql" not found');
+    });
+
+    it('removes a relation immediately', function() {
+      var _remove_relation = utils.makeStubMethod(env, '_remove_relation');
+      this._cleanups.push(_remove_relation.reset);
+      env.remove_relation(null, null, null, {immediate: true});
+      assert.equal(_remove_relation.calledOnce(), true);
     });
 
     it('calls the ecs remove unit', function() {
