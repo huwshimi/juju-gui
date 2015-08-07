@@ -193,7 +193,10 @@ YUI.add('scale-up-view', function(Y) {
           constraints: constraints
         }], function(machine) {
           db.machines.remove(machine);
-        }.bind(this, machine), { modelId: machine.id});
+        }.bind(this, machine), {
+          modelId: machine.id,
+          immediate: localStorage.getItem('bypass-ecs') || false
+        });
         env.placeUnit(
             utils.addGhostAndEcsUnits(db, env, service, 1)[0],
             machine.id);

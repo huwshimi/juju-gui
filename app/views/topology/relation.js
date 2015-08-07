@@ -651,7 +651,8 @@ YUI.add('juju-topology-relation', function(Y) {
       utils.addSVGClass(relationElement, 'to-remove pending-relation');
       env.remove_relation(relation.endpoints[0], relation.endpoints[1],
           Y.bind(this._removeRelationCallback, this, view,
-          relationElement, relation.relation_id, confirmButton));
+          relationElement, relation.relation_id, confirmButton),
+          {immediate: localStorage.getItem('bypass-ecs') || false});
     },
 
     _removeRelationCallback: function(view,
@@ -1084,7 +1085,10 @@ YUI.add('juju-topology-relation', function(Y) {
       env.add_relation(endpoints[0], endpoints[1],
           Y.bind(this._addRelationCallback, this,
                  module, relation.get('relation_id')),
-          {modelId: relation.get('id')}
+          {
+            modelId: relation.get('id'),
+            immediate: localStorage.getItem('bypass-ecs') || false
+          }
       );
       module.set('currentServiceClickAction', 'hideServiceMenu');
     },

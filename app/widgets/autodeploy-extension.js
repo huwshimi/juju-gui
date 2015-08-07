@@ -72,7 +72,10 @@ YUI.add('autodeploy-extension', function(Y) {
         containerType: containerType,
         parentId: parentId,
         constraints: constraints || {}
-      }], callback, {modelId: machine.id});
+      }], callback, {
+        modelId: machine.id,
+        immediate: localStorage.getItem('bypass-ecs') || false
+      });
       return machine;
     },
 

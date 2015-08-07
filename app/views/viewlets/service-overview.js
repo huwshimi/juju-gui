@@ -593,7 +593,8 @@ YUI.add('inspector-overview-view', function(Y) {
         // unit.
         env.add_unit(
             service.get('id'), delta, null,
-            Y.bind(this._addUnitCallback, this));
+            Y.bind(this._addUnitCallback, this),
+            {immediate: localStorage.getItem('bypass-ecs') || false});
       } else if (delta < 0) {
         delta = Math.abs(delta);
         var units = service.get('units'),
@@ -606,7 +607,8 @@ YUI.add('inspector-overview-view', function(Y) {
         }
         env.remove_units(
             unit_ids_to_remove,
-            Y.bind(this._removeUnitCallback, this)
+            Y.bind(this._removeUnitCallback, this),
+            {immediate: localStorage.getItem('bypass-ecs') || false}
         );
       }
       field.set('disabled', true);

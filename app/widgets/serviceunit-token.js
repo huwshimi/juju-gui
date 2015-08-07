@@ -127,7 +127,9 @@ YUI.add('juju-serviceunit-token', function(Y) {
       var unit = this.get('unit');
       // Removing the unit from the DB will cause the token to be destroyed
       // from the machine view panel.
-      this.get('env').remove_units([unit.id]);
+      this.get('env').remove_units(
+          [unit.id], null,
+          {immediate: localStorage.getItem('bypass-ecs') || false});
     },
 
     /**

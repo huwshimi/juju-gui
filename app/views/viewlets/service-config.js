@@ -276,7 +276,8 @@ YUI.add('service-config-view', function(Y) {
             config,
             inspector.configFileContent,
             service.get('config'),
-            Y.bind(this._setConfigCallback, this, container)
+            Y.bind(this._setConfigCallback, this, container),
+            {immediate: localStorage.getItem('bypass-ecs') || false}
         );
       } else {
         db.notifications.add(

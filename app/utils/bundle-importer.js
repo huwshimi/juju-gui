@@ -343,7 +343,10 @@ YUI.add('bundle-importer', function(Y) {
           record.args[0].parentId, record.args[0].containerType);
       this.env.addMachines(record.args, function(machine) {
         this.db.machines.remove(machine);
-      }.bind(this, machine), { modelId: machine.id});
+      }.bind(this, machine), {
+        modelId: machine.id,
+        immediate: localStorage.getItem('bypass-ecs') || false
+      });
       // Loop through recordSet and add the machine model to every record which
       // requires it.
       this._saveModelToRequires(record.id, machine);
@@ -545,7 +548,10 @@ YUI.add('bundle-importer', function(Y) {
         record.args.push(null);
       }
       // Add the ghost model Id to the arguments list for the ECS.
-      record.args.push({modelId: unitId});
+      record.args.push({
+        modelId: unitId,
+        immediate: localStorage.getItem('bypass-ecs') || false
+      });
       this.env.add_unit.apply(this.env, record.args);
       if (record.args[2] !== null) {
         // We only place unit if one is defined. This functionality is up for
@@ -595,7 +601,10 @@ YUI.add('bundle-importer', function(Y) {
               scope: e.result.scope
             });
           }.bind(this),
-          {modelId: relation.get('id')});
+          {
+            modelId: relation.get('id'),
+            immediate: localStorage.getItem('bypass-ecs') || false
+          });
       next();
     },
 

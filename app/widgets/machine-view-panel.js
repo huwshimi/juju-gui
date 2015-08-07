@@ -986,7 +986,10 @@ YUI.add('machine-view-panel', function(Y) {
                       level: 'error'
                     });
                   }
-                }.bind(this), {modelId: machineName});
+                }.bind(this), {
+                  modelId: machineName,
+                  immediate: localStorage.getItem('bypass-ecs') || false
+                });
           }
           this.removeUncommittedUnitsFromMachine(machine);
         },
@@ -1028,7 +1031,9 @@ YUI.add('machine-view-panel', function(Y) {
           var token = containerTokens[machine.parentId ?
               machineId : machineId + '/root-container'];
           token.setUnitDeleted(unit);
-          this.get('env').remove_units([unitId]);
+          this.get('env').remove_units(
+              [unitId], null,
+              {immediate: localStorage.getItem('bypass-ecs') || false});
           if (!unit.agent_state) {
             this._containersHeader.updateLabelCount('unit', -1);
             // Update the icons on the parent machine.

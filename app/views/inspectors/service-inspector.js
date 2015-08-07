@@ -235,7 +235,8 @@ YUI.add('service-inspector', function(Y) {
       var service = this.get('model'),
           env = this.get('env');
       env.unexpose(service.get('id'),
-          Y.bind(this._unexposeServiceCallback, this), {});
+          Y.bind(this._unexposeServiceCallback, this),
+          {immediate: localStorage.getItem('bypass-ecs') || false});
     },
 
     /**
@@ -279,7 +280,8 @@ YUI.add('service-inspector', function(Y) {
       var service = this.get('model'),
           env = this.get('env');
       env.expose(service.get('id'),
-          Y.bind(this._exposeServiceCallback, this), {});
+          Y.bind(this._exposeServiceCallback, this),
+          {immediate: localStorage.getItem('bypass-ecs') || false});
     },
 
     /**

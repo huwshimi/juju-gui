@@ -269,7 +269,11 @@ YUI.add('subapp-browser', function(Y) {
                   undefined, //config file content
                   1, // number of units
                   {}, //constraints
-                  null); // toMachine
+                  null, // toMachine
+                  null, // callback
+                  {immediate: localStorage.getItem(
+                      'bypass-ecs') || false} //options
+              );
               this.fire('autoplaceAndCommitAll');
             }.bind(this),
             failureNotification.bind(this));

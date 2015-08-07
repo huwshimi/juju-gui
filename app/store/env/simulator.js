@@ -63,7 +63,10 @@ YUI.add('juju-fakebackend-simulator', function(Y) {
     // Select a random machine where to create the new container.
     var name = names[Math.floor(Math.random() * names.length)];
     // Add the new container to the database.
-    var result = state.addMachines([{parentId: name, containerType: 'lxc'}]);
+    var result = state.addMachines(
+        [{parentId: name, containerType: 'lxc'}],
+        null,
+        {immediate: localStorage.getItem('bypass-ecs') || false});
     return result.machines[0].name;
   };
   // Add the function above to the environments module for tests.

@@ -717,7 +717,9 @@ YUI.add('juju-env-sandbox', function(Y) {
     */
     handleClientDestroyMachines: function(data, client, state) {
       var params = data.Params;
-      var response = state.destroyMachines(params.MachineNames, params.Force);
+      var response = state.destroyMachines(
+          params.MachineNames, params.Force, null,
+          {immediate: localStorage.getItem('bypass-ecs') || false});
       this._basicReceive(data, client, response);
     },
 
@@ -1030,7 +1032,9 @@ YUI.add('juju-env-sandbox', function(Y) {
     @return {undefined} Side effects only.
     */
     handleClientServiceExpose: function(data, client, state) {
-      var result = state.expose(data.Params.ServiceName);
+      var result = state.expose(
+          data.Params.ServiceName, null,
+          {immediate: localStorage.getItem('bypass-ecs') || false});
       this._basicReceive(data, client, result);
     },
 
@@ -1044,7 +1048,9 @@ YUI.add('juju-env-sandbox', function(Y) {
     @return {undefined} Side effects only.
     */
     handleClientServiceUnexpose: function(data, client, state) {
-      var result = state.unexpose(data.Params.ServiceName);
+      var result = state.unexpose(
+          data.Params.ServiceName, null,
+          {immediate: localStorage.getItem('bypass-ecs') || false});
       this._basicReceive(data, client, result);
     },
 

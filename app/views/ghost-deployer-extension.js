@@ -75,7 +75,10 @@ YUI.add('ghost-deployer-extension', function(Y) {
           null, // toMachine.
           Y.bind(this._deployCallbackHandler, this, ghostService),
           // Options used by ECS, ignored by environment.
-          {modelId: ghostServiceId});
+          {
+            modelId: ghostServiceId,
+            immediate: localStorage.getItem('bypass-ecs') || false
+          });
 
       // Add an unplaced unit to this service if it is not a subordinate
       // (subordinate units reside alongside non-subordinate units).
@@ -100,7 +103,10 @@ YUI.add('ghost-deployer-extension', function(Y) {
             null, // For now the unit is unplaced.
             Y.bind(this._addUnitCallback, this, ghostUnit), // The callback.
             // Options used by ECS, ignored by environment.
-            {modelId: unitId}
+            {
+              modelId: unitId,
+              immediate: localStorage.getItem('bypass-ecs') || false
+            }
         );
       }
       this.get('subApps').charmbrowser.fire('changeState', {

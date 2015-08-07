@@ -2219,7 +2219,10 @@ YUI.add('juju-view-utils', function(Y) {
           1,
           null,
           removeGhostAddUnitCallback.bind(null, ghostUnit, db, callback),
-          {modelId: unitId});
+          {
+            modelId: unitId,
+            immediate: localStorage.getItem('bypass-ecs') || false
+          });
       units.push(ghostUnit);
     }
     return units;

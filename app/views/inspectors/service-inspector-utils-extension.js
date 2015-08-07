@@ -161,7 +161,10 @@ YUI.add('service-inspector-utils-extension', function(Y) {
         var env = this.get('env');
         env.destroy_service(model.get('id'),
             Y.bind(this._destroyServiceCallback, this, model, db),
-            {modelId: null});
+            {
+              modelId: null,
+              immediate: localStorage.getItem('bypass-ecs') || false
+            });
       } else if (model.get('pending')) {
         db.services.remove(model);
         model.destroy();
