@@ -157,7 +157,8 @@ YUI.add('juju-gui', function(Y) {
                   'force-containers': localStorage.getItem('force-containers'),
                   'disable-cookie': localStorage.getItem('disable-cookie'),
                   'auto-place-default': localStorage.getItem(
-                      'auto-place-default')
+                      'auto-place-default'),
+                  'bypass-ecs': localStorage.getItem('bypass-ecs')
                 })
             );
 

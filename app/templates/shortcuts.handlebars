@@ -64,6 +64,16 @@
         </tr>
         <tr>
             <td class="binding">
+                <input type="checkbox" name="bypass-ecs" id="bypass-ecs"
+                  {{#if bypass-ecs }}
+                      checked="checked"
+                  {{/if}}
+                />
+            </td>
+            <td><label for="bypass-ecs">Commit all changes immediately. WARNING: This is a demo mode, not to be used in live environments.</label></td>
+        </tr>
+        <tr>
+            <td class="binding">
               <input type="button" class="button" name="save-settings" id="save-settings" value="Save"/>
             </td>
             <td>NOTE: saving will reload the GUI so the settings take effect.</td>
