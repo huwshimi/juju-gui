@@ -55,17 +55,16 @@ YUI.add('ghost-deployer-extension', function(Y) {
       this._setupXYAnnotations(ghostAttributes, ghostService);
 
       var config = {};
+      var ghostServiceId = ghostService.get('id');
+      Y.Object.each(charm.get('options'), function(v, k) {
+        config[k] = v['default'];
+      });
+      ghostService.set('config', config);
       // XXX frankban 2014-05-11:
       // after the ODS demo, find a smarter way to set a unique service name.
       var serviceName = charm.get('name');
       var charmId = charm.get('id');
       var constraints = {};
-      var serviceId = localStorage.getItem(
-          'bypass-ecs') ? serviceName : ghostService.get('id');
-      Y.Object.each(charm.get('options'), function(v, k) {
-        config[k] = v['default'];
-      });
-      ghostService.set('config', config);
       this.env.deploy(
           charmId,
           serviceName,
@@ -77,7 +76,7 @@ YUI.add('ghost-deployer-extension', function(Y) {
           Y.bind(this._deployCallbackHandler, this, ghostService),
           // Options used by ECS, ignored by environment.
           {
-            modelId: serviceId,
+            modelId: ghostServiceId,
             immediate: localStorage.getItem('bypass-ecs') || false
           });
 
@@ -88,7 +87,7 @@ YUI.add('ghost-deployer-extension', function(Y) {
         // can safely assume the first unit to be unit 0. Each subsequent
         // unit added to the ghost service would have number
         // `ghostService.get('units').size()`.
-        var unitId = serviceId + '/0';
+        var unitId = ghostServiceId + '/0';
         var ghostUnit = db.addUnits({
           id: unitId,
           displayName: serviceName + '/0',
@@ -99,7 +98,7 @@ YUI.add('ghost-deployer-extension', function(Y) {
         // removes the ghost unit from the database. The real unit should then
         // be created reacting to the mega-watcher changes.
         this.env.add_unit(
-            serviceId, // The service to which the unit is added.
+            ghostServiceId, // The service to which the unit is added.
             1, // Add a single unit.
             null, // For now the unit is unplaced.
             Y.bind(this._addUnitCallback, this, ghostUnit), // The callback.
