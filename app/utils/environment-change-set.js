@@ -284,7 +284,7 @@ YUI.add('environment-change-set', function(Y) {
             return true;
           }
           // If the unit isn't unplaced, return that.  If it is unplaced,
-          // remove it from the list and increment its indiex so that it
+          // remove it from the list and increment its index so that it
           // can be committed next time.
           if (unplacedIds.indexOf(modelId) < 0) {
             return true;
