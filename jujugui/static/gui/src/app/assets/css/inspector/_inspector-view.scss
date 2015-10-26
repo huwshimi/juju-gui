@@ -8,6 +8,11 @@
     left: $panel-space;
     width: $left-panel-width;
     max-height: calc(100% - #{$extra-space});
+    transition: height 0.2s;
+
+    &__container {
+        @extend %scroll-children;
+    }
 
     &__list {
         list-style: none;

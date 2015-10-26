@@ -30,7 +30,9 @@ YUI.add('inspector-component', function() {
     */
     getInitialState: function() {
       // Setting a default state object.
-      return this.generateState(this.props);
+      var state = this.generateState(this.props);
+      state.height = 'auto';
+      return state;
     },
 
     /**
@@ -243,17 +245,31 @@ YUI.add('inspector-component', function() {
       this.setState(this.generateState(nextProps));
     },
 
+    componentDidUpdate: function(prevProps, prevState) {
+      if (this.state.activeComponent !== prevState.activeComponent) {
+        var node = React.findDOMNode(this)
+        var newHeight = node.children[0].offsetHeight  + 'px';
+        this.setState({height: newHeight});
+      }
+    },
+
+    _generateStyles: function(height) {
+      return {height: height};
+    },
+
     render: function() {
       return (
-        <div className="inspector-view">
-          <juju.components.InspectorHeader
-            backCallback={this._backCallback}
-            activeComponent={this.state.activeComponent}
-            type={this.state.activeChild.headerType}
-            count={this.state.activeChild.count}
-            title={this.state.activeChild.title} />
-          <div className="inspector-content">
-            {this.state.activeChild.component}
+        <div className="inspector-view" style={this._generateStyles(this.state.height)}>
+          <div className="inspector-view__container">
+            <juju.components.InspectorHeader
+              backCallback={this._backCallback}
+              activeComponent={this.state.activeComponent}
+              type={this.state.activeChild.headerType}
+              count={this.state.activeChild.count}
+              title={this.state.activeChild.title} />
+            <div className="inspector-content">
+              {this.state.activeChild.component}
+            </div>
           </div>
         </div>
       );
