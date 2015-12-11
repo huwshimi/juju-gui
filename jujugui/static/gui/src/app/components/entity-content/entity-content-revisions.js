@@ -27,6 +27,17 @@ YUI.add('entity-content-revisions', function() {
     },
 
     /**
+      Handle clicks on accordion. Toggles the concealed class on the list node
+      which hides all the list items apart from the first.
+
+      @method _handleAccordionClick
+    */
+    _handleAccordionClick: function(show) {
+      var list = ReactDOM.findDOMNode(this).querySelector('.revisions__list');
+      list.classList.toggle('list--concealed');
+    },
+
+    /**
       Generate the list of revisions.
 
       @method _generateRevisions
@@ -60,13 +71,17 @@ YUI.add('entity-content-revisions', function() {
     render: function() {
       var revisions = this.props.revisions;
       return (
-        <div className="revisions box four-col section is-closed" id="revisions">
+        <div className="revisions section" id="revisions">
           <h3 className="section__title">{revisions.length} Revisions</h3>
           <ol className="revisions__list list--concealed" ref="list" reversed>
             {this._generateRevisions()}
             <li className="list__controls">
-              <a href="" className="btn__see--more">See more</a>
-              <a href="#revisions" className="btn__see--less">See less</a>
+              <a href="" className="btn__see--more"
+                onClick={this._handleAccordionClick.bind(
+                  this, true)}>See more</a>
+              <a href="#revisions" className="btn__see--less"
+                onClick={this._handleAccordionClick.bind(
+                  this, false)}>See less</a>
             </li>
           </ol>
         </div>
