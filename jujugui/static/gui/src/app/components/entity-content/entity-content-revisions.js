@@ -21,10 +21,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 YUI.add('entity-content-revisions', function() {
 
   juju.components.EntityContentRevisions = React.createClass({
-    /* Define and validate the properites available on this component. */
-    propTypes: {
-      revisions: React.PropTypes.object.isRequired
-    },
 
     /**
       Handle clicks on accordion. Toggles the concealed class on the list node
@@ -52,7 +48,7 @@ YUI.add('entity-content-revisions', function() {
           ('0' + (date.getMonth() + 1)).slice(-2) + '-' +
           ('0' + (date.getDay() + 1)).slice(-2);
         components.push(
-          <li className="revisions__list-item list-item">
+          <li className="revisions__list-item list-item" key={revision.revno}>
             <p className="revisions__list-meta smaller">
               by {revision.authors[0].name}
               <span className="revisions__list-meta-date">
