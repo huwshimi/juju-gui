@@ -192,6 +192,7 @@ YUI.add('entity-content', function() {
     */
     _showEntityRevisions: function() {
       var entityModel = this.props.entityModel;
+      console.log(entityModel.get('revisions'));
       if (entityModel.get('entityType') === 'charm') {
         return (
           <div className="four-col">
