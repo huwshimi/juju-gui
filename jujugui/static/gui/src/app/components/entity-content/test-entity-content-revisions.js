@@ -43,17 +43,51 @@ describe('EntityContentRevisions', function() {
     var output = jsTestUtils.shallowRender(
       <juju.components.EntityContentRevisions
         revisions={mockEntity.get('revisions')} />);
+    var buttons = output.props.children[1].props.children[1].props.children;
     var expected = (
       <div className="revisions section" id="revisions">
-        <h3 className="section__title">{revisions.length} Revisions</h3>
+        <h3 className="section__title">{3} Revisions</h3>
         <ol className="revisions__list list--concealed" ref="list" reversed>
+          {[
+            <li className="revisions__list-item list-item" key={40}>
+              <p className="revisions__list-meta smaller">
+                by {"Charles Butler"}
+                <span className="revisions__list-meta-date">
+                  2015-06-04
+                </span>
+              </p>
+              <p className="revisions__list-message">
+                Fix the django 1.8 with postgresql test.
+              </p>
+            </li>,
+            <li className="revisions__list-item list-item" key={39}>
+              <p className="revisions__list-meta smaller">
+                by {"Tim Van Steenburgh"}
+                <span className="revisions__list-meta-date">
+                  2015-06-07
+                </span>
+              </p>
+              <p className="revisions__list-message">
+                Remove charmhelpers.contrib (not used)
+              </p>
+            </li>,
+            <li className="revisions__list-item list-item" key={38}>
+              <p className="revisions__list-meta smaller">
+                by {"Charles Butler"}
+                <span className="revisions__list-meta-date">
+                  2015-05-07
+                </span>
+              </p>
+              <p className="revisions__list-message">
+                Run migrate if django is modern enough.
+              </p>
+            </li>
+          ]}
           <li className="list__controls">
             <a href="" className="btn__see--more"
-              onClick={this._handleAccordionClick.bind(
-                this, true)}>See more</a>
+              onClick={buttons[0].props.onClick}>See more</a>
             <a href="#revisions" className="btn__see--less"
-              onClick={this._handleAccordionClick.bind(
-                this, false)}>See less</a>
+              onClick={buttons[1].props.onClick}>See less</a>
           </li>
         </ol>
       </div>);
