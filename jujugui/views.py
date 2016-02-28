@@ -99,6 +99,9 @@ def config(request):
         # The charm store URL and path.
         'charmstoreURL': settings['jujugui.charmstore_url'],
         'apiPath': settings['jujugui.api_path'],
+        # The identity URL and path.
+        'identityURL': settings['jujugui.identity_url'],
+        'identityPath': settings['jujugui.identity_path'],
         # WebSocket connection to the Juju API.
         'socket_protocol': socket_protocol,
         'user': user,

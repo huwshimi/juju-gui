@@ -1265,12 +1265,20 @@ YUI.add('juju-gui', function(Y) {
     _setupCharmstore: function(Charmstore) {
       if (this.get('charmstore') === undefined) {
         var jujuConfig = window.juju_config,
-            charmstoreURL, apiPath;
+            charmstoreURL, apiPath, identityURL, identityPath;
         if (!jujuConfig || !jujuConfig.charmstoreURL || !jujuConfig.apiPath) {
           console.error('No juju config for charmstoreURL or apiPath availble');
         } else {
           charmstoreURL = jujuConfig.charmstoreURL;
           apiPath = jujuConfig.apiPath;
+        }
+        if (!jujuConfig || !jujuConfig.identityURL ||
+          !jujuConfig.identityPath) {
+          console.error(
+            'No juju config for identityURL or identityPath availble');
+        } else {
+          identityURL = jujuConfig.identityURL;
+          identityPath = jujuConfig.identityPath;
         }
         var bakery = new Y.juju.environments.web.Bakery({
           webhandler: new Y.juju.environments.web.WebHandler(),
@@ -1279,7 +1287,8 @@ YUI.add('juju-gui', function(Y) {
           staticMacaroonPath: `${charmstoreURL}${apiPath}/macaroon`,
           serviceName: 'charmstore'
         });
-        this.set('charmstore', new Charmstore(charmstoreURL, apiPath, bakery));
+        this.set('charmstore', new Charmstore(
+          charmstoreURL, apiPath, identityURL, identityPath, bakery));
         // Store away the charmstore auth info.
         var macaroon = bakery.getMacaroon();
         this.storeUser('charmstore', macaroon);
@@ -2093,6 +2102,8 @@ YUI.add('juju-gui', function(Y) {
         }
 
         if (username) {
+          var charmstore = this.get('charmstore');
+          charmstore.getUser('huwshimi', function(error, data) { console.log(error, data); })
           var users = this.get('users');
           users[service] = {
             user: { name: username }

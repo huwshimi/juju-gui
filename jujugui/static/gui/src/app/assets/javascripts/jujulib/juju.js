@@ -179,9 +179,12 @@ var module = module;
         desired form (e.g. turning it into juju gui model objects.
      @returns {Object} A client object for making charmstore API calls.
    */
-  function charmstore(url, apiVersion, bakery, processEntity) {
+  function charmstore(
+    url, apiVersion, identityURL, identityVersion, bakery, processEntity) {
     this.url = url;
     this.version = apiVersion;
+    this.identityURL = identityURL;
+    this.identityVersion = identityVersion;
     this.bakery = bakery;
 
     // XXX jcsackett 2015-11-09 Methods that return entity data should
@@ -205,11 +208,47 @@ var module = module;
         passed in.
     */
     _generatePath: function(endpoint, query, extension) {
+      return this._generateFullPath(
+        this.url + this.version, endpoint, query, extension);
+    },
+
+    /**
+      Generates a path to the identity API based on the query and endpoint
+      params passed in.
+
+      @method _generatePath
+      @param endpoint {String} The endpoint to call.
+      @param query {Object} The query parameters that are required for the
+        request.
+      @param extension {Boolean} Any extension to add to the endpoint
+        such as /meta/any or /archive.
+      @return {String} An identity url based on the query and endpoint params
+        passed in.
+    */
+    _generateIdentityPath: function(endpoint, query, extension) {
+      return this._generateFullPath(
+        this.identityURL + this.identityVersion, endpoint, query, extension);
+    },
+
+    /**
+      Generates a path based on the query and endpoint params passed in.
+
+      @method _generatePath
+      @param basePath {String} The base api path.
+      @param endpoint {String} The endpoint to call at the charmstore.
+      @param query {Object} The query parameters that are required for the
+        request.
+      @param extension {Boolean} Any extension to add to the endpoint
+        such as /meta/any or /archive.
+      @return {String} A charmstore url based on the query and endpoint params
+        passed in.
+    */
+    _generateFullPath: function(basePath, endpoint, query, extension) {
       query = query ? '?' + query : '';
       if (extension) {
         endpoint = endpoint + extension;
       }
-      return this.url + this.version + '/' + endpoint + query;
+      return basePath + '/' + endpoint + query;
     },
 
     /**
@@ -501,6 +540,28 @@ var module = module;
         'GET',
         null,
         this._transformQueryResults.bind(this, callback));
+    },
+
+    /**
+      Makes a list request using the supplied author and returns the results to
+      the supplied callback.
+
+      @method list
+      @param author {String} The charm author's username.
+      @param callback {Function} A callback to handle errors or accept the data
+          from the request. Must accept an error message or null as its first
+          parameter and the response data as its second.
+      @param type {String} Type of entity to list, must be either 'bundle' or
+          'charm'. Defaults to charm.
+    */
+    getUser: function(username, callback) {
+      console.log('getUser', this._generateIdentityPath('u/' + username));
+      return _makeRequest(
+        this.bakery,
+        this._generateIdentityPath('u/' + username),
+        'GET',
+        null,
+        callback);
     },
 
     /**
