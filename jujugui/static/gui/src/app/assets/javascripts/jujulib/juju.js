@@ -586,9 +586,9 @@ var module = module;
 
 
   /**
-     Charmstore object for jujulib.
+     Identity object for jujulib.
 
-     Provides access to the charmstore API.
+     Provides access to the identity API.
    */
 
   /**
