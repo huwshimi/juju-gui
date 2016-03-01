@@ -402,6 +402,8 @@ YUI.add('juju-gui', function(Y) {
 
       // Create a client side database to store state.
       this.db = new models.Database();
+      // Creates and sets up a new instance of the identity api.
+      this._setupIdentity(window.jujulib.identity);
       // Creates and sets up a new instance of the charmstore.
       this._setupCharmstore(window.jujulib.charmstore);
 
@@ -1265,13 +1267,39 @@ YUI.add('juju-gui', function(Y) {
     _setupCharmstore: function(Charmstore) {
       if (this.get('charmstore') === undefined) {
         var jujuConfig = window.juju_config,
-            charmstoreURL, apiPath, identityURL, identityPath;
+            charmstoreURL, apiPath;
         if (!jujuConfig || !jujuConfig.charmstoreURL || !jujuConfig.apiPath) {
           console.error('No juju config for charmstoreURL or apiPath availble');
         } else {
           charmstoreURL = jujuConfig.charmstoreURL;
           apiPath = jujuConfig.apiPath;
         }
+        var bakery = new Y.juju.environments.web.Bakery({
+          webhandler: new Y.juju.environments.web.WebHandler(),
+          interactive: this.get('interactiveLogin'),
+          setCookiePath: charmstoreURL + apiPath + '/set-auth-cookie',
+          staticMacaroonPath: `${charmstoreURL}${apiPath}/macaroon`,
+          serviceName: 'charmstore'
+        });
+        this.set('charmstore', new Charmstore(charmstoreURL, apiPath, bakery));
+        // Store away the charmstore auth info.
+        var macaroon = bakery.getMacaroon();
+        this.storeUser('charmstore', macaroon);
+      }
+    },
+
+    /**
+      Creates a new instance of the new identity api and assigns it to the
+      identity attribute. Idempotent.
+
+      @method _setupIdentity
+      @param {Object} Identity The Identity class to instantiate and store
+        in the app.
+    */
+    _setupIdentity: function(Identity) {
+      if (this.get('identity') === undefined) {
+        var jujuConfig = window.juju_config,
+            identityURL, identityPath;
         if (!jujuConfig || !jujuConfig.identityURL ||
           !jujuConfig.identityPath) {
           console.error(
@@ -1283,15 +1311,11 @@ YUI.add('juju-gui', function(Y) {
         var bakery = new Y.juju.environments.web.Bakery({
           webhandler: new Y.juju.environments.web.WebHandler(),
           interactive: this.get('interactiveLogin'),
-          setCookiePath: charmstoreURL + apiPath + '/set-auth-cookie',
-          staticMacaroonPath: `${charmstoreURL}${apiPath}/macaroon`,
-          serviceName: 'charmstore'
+          setCookiePath: identityURL + identityPath + '/set-auth-cookie',
+          staticMacaroonPath: `${identityURL}${identityPath}/macaroon`,
+          serviceName: 'identity'
         });
-        this.set('charmstore', new Charmstore(
-          charmstoreURL, apiPath, identityURL, identityPath, bakery));
-        // Store away the charmstore auth info.
-        var macaroon = bakery.getMacaroon();
-        this.storeUser('charmstore', macaroon);
+        this.set('identity', new Identity(identityURL, identityPath, bakery));
       }
     },
 
@@ -2102,8 +2126,10 @@ YUI.add('juju-gui', function(Y) {
         }
 
         if (username) {
-          var charmstore = this.get('charmstore');
-          charmstore.getUser('huwshimi', function(error, data) { console.log(error, data); })
+          var identity = this.get('identity');
+          identity.getUser(username, function(error, data) {
+            console.log(error, data);
+          });
           var users = this.get('users');
           users[service] = {
             user: { name: username }
