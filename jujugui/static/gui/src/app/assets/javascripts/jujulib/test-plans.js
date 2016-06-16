@@ -204,4 +204,45 @@ describe('jujulib plans service', function() {
     });
   });
 
+  fit('can authorise a plan', function(done) {
+    var bakery = {
+      sendPostRequest: function(path, params, success, failure) {
+        assert.equal(
+          path,
+          'http://1.2.3.4/' +
+          window.jujulib.plansAPIVersion +
+          '/plan/authorize');
+        var xhr = makeXHRRequest({
+          'this-is-a': 'macaroon'
+        });
+        success(xhr);
+      }
+    };
+    var plans = new window.jujulib.plans('http://1.2.3.4/', bakery);
+    plans.authorize(
+      'uuid', 'cs:trusty/django-9', 'my-django', 'my-plan', 'budget', 'limit',
+      function(error, response) {
+      assert.strictEqual(error, null);
+      assert.deepEqual(reponse, {'this-is-a': 'macaroon'});
+      done();
+    });
+  });
+
+  it('handles errors authorising a plan', function(done) {
+    var bakery = {
+      sendPostRequest: function(path, params, success, failure) {
+        var xhr = makeXHRRequest({error: 'bad wolf'});
+        failure(xhr);
+      }
+    };
+    var plans = new window.jujulib.plans('http://1.2.3.4/', bakery);
+    plans.authorize(
+      'uuid', 'cs:trusty/django-9', 'my-django', 'my-plan', 'budget', 'limit',
+      function(error, response) {
+        assert.equal(error, 'bad wolf');
+        assert.strictEqual(response, null);
+      done();
+    });
+  });
+
 });

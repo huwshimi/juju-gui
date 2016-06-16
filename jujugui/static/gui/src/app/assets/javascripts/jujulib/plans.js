@@ -97,6 +97,34 @@ var module = module;
       };
       var url = this.url + '/status/' + modelUuid + '/' + applicationName;
       return jujulib._makeRequest(this.bakery, url, 'GET', null, handler);
+    },
+
+    /**
+      Get a plan authorisation to deploy a given charm.
+
+      @public authorize
+      @params modelUuid {String} The model UUID.
+      @params charmURL {String} The URL of the charm to be deployed.
+      @params applicationName {String} The name of the application.
+      @params planURL {String} The URL of the plan being deployed.
+      @params budget {String} The name of the budget under which the service is
+        to be deployed.
+      @params limit {String} The allocation limit.
+      @params callback {Function} A callback to handle errors or accept the
+        data from the request. Must accept an error message or null as its
+        first parameter and a macaroon as the second parameter.
+    */
+    authorize: function(
+      modelUuid, charmURL, applicationName, planURL, budget, limit, callback) {
+      var handler = function(error, response) {
+        if (error !== null) {
+          callback(error, null, []);
+          return;
+        }
+        callback(null, response);
+      };
+      var url = this.url + '/plan/authorize';
+      return jujulib._makeRequest(this.bakery, url, 'POST', null, handler);
     }
 
   };
