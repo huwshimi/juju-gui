@@ -36,9 +36,6 @@ YUI.add('juju-models', function(Y) {
   // Define strings representing juju-core entities' Life state.
   var ALIVE = 'alive';
   var DYING = 'dying';
-  // The default Juju GUI service name.
-  var JUJU_GUI_APPLICATION_NAME = 'juju-gui';
-
   // This is a helper function used by all of the process_delta methods.
   var _process_delta = function(list, action, change_data, change_base) {
     var instanceId;
@@ -2348,18 +2345,7 @@ YUI.add('juju-models', function(Y) {
       var machinePlacement = {};
       var owners = {};
       var machineNames = {};
-
-      // Strip uncommitted machines and containers from the machine list.
-      var db = this; // machineList.filter does not respect bindscope.
-      var machines = machineList.filter(function(machine) {
-        if (machine.commitStatus === 'uncommitted' ||
-            machine.commitStatus === 'in-progress' ||
-            db.units.filterByMachine(machine.id).length === 0) {
-          return false;
-        }
-        return true;
-      });
-
+      const machines = machineList.toArray();
       // "Sort" machines w/ parents (e.g. containers) to the back of the list.
       machines.sort(function(a, b) {
         var aLxc = 0,
@@ -2374,12 +2360,7 @@ YUI.add('juju-models', function(Y) {
       });
 
       machines.forEach(function(machine) {
-        // We're only intested in committed units on the machine.
-        var units = this.units.filterByMachine(machine.id).filter(
-            function(unit) {
-              return unit.agent_state;
-            });
-
+        var units = this.units.filterByMachine(machine.id);
         var machineName;
         var containerType = machine.containerType;
         if (containerType !== null && containerType !== undefined) {
@@ -2472,17 +2453,6 @@ YUI.add('juju-models', function(Y) {
         var charmOptions = charm.get('options');
         var serviceName = service.get('id');
 
-        // Exclude this service if it is a ghost or if it is named "juju-gui".
-        // This way we prevent the Juju GUI service to be exported when the
-        // bundle is created from a live environment. Note that this is a weak
-        // check: in theory, each deployed charm can be named "juju-gui", but
-        // we still assume this convention since there are no other (more
-        // solid) ways to exclude the Juju GUI service.
-        if (service.get('pending') === true ||
-            serviceName === JUJU_GUI_APPLICATION_NAME) {
-          return;
-        }
-
         // Process the service_options removing any values
         // that are the default value for the charm.
         Y.each(service.get('config'), function(value, key) {
@@ -2557,23 +2527,9 @@ YUI.add('juju-models', function(Y) {
     _generateRelationSpec: function(relationList) {
       var relations = [];
       relationList.each(function(relation) {
-        if (relation.get('id').indexOf('pending-') === 0) {
-          // Skip pending relations
-          return;
-        }
         var endpoints = relation.get('endpoints');
         // Skip peer relations: they should be added automatically.
         if (endpoints.length === 1) {
-          return;
-        }
-        // Skip relations on the juju-gui service. The Juju GUI is not supposed
-        // to have relation established with other charms, but this can change
-        // in the future, and also this can be the case when an extraneous
-        // service is named "juju-gui".
-        var serviceNames = endpoints.map(function(endpoint) {
-          return endpoint[0];
-        });
-        if (serviceNames.indexOf(JUJU_GUI_APPLICATION_NAME) !== -1) {
           return;
         }
         // Export this relation.
@@ -2598,20 +2554,12 @@ YUI.add('juju-models', function(Y) {
     _generateMachineSpec: function(machinePlacement, machineList, serviceList) {
       var machines = {};
       var counter = 0;
-      // We want to exlcude any machines which do not have units placed on
-      // them as well as the machine which contains the GUI if it is the
-      // only unit on that machine.
+      // We want to exclude any machines which do not have units placed on
+      // them.
       var machineIdList = [];
       var machineIdMap = {};
       Object.keys(machinePlacement).forEach(function(serviceName) {
         machinePlacement[serviceName].forEach(function(machineId) {
-          // Check to make sure the charm name for this service is juju-gui
-          // This is in case the user has renamed the gui instance on deploy.
-          var charmName = this.services.getById(serviceName).get('name');
-          if (charmName === JUJU_GUI_APPLICATION_NAME) {
-            // Don't add the GUI machine into the machine list;
-            return;
-          }
           // Checking for dupes before adding to the list
           var idExists = machineIdList.some(function(id) {
             if (id === machineId) {
@@ -2649,22 +2597,20 @@ YUI.add('juju-models', function(Y) {
           }
         }, this);
         // Add the machine placement information to the services 'to' directive.
-        if (serviceName !== JUJU_GUI_APPLICATION_NAME) {
-          serviceList[serviceName].to = machinePlacement[serviceName].map(
-              function(machineId) {
-                var parts = machineId.split(':');
-                if (parts.length === 2) {
-                  // It's a container
-                  var partInt = parseInt(parts[1], 10);
-                  if (!isNaN(partInt)) {
-                    parts[1] = machineIdMap[partInt];
-                  }
-                  return parts.join(':');
-                } else {
-                  return machineIdMap[machineId] + '';
+        serviceList[serviceName].to = machinePlacement[serviceName].map(
+            function(machineId) {
+              var parts = machineId.split(':');
+              if (parts.length === 2) {
+                // It's a container
+                var partInt = parseInt(parts[1], 10);
+                if (!isNaN(partInt)) {
+                  parts[1] = machineIdMap[partInt];
                 }
-              });
-        }
+                return parts.join(':');
+              } else {
+                return machineIdMap[machineId] + '';
+              }
+            });
       }, this);
 
       machineList.each(function(machine) {
@@ -2694,7 +2640,8 @@ YUI.add('juju-models', function(Y) {
             machineId = parts[1];
           }
           machines[machineIdMap[machineId]] = {};
-          machines[machineIdMap[machineId]].series = machine.series;
+          machines[machineIdMap[machineId]].series = machine.series ||
+            this.environment.get('defaultSeries');
           var constraints = this._collapseMachineConstraints(machine.hardware);
           if (constraints.length > 0) {
             machines[machineIdMap[machineId]].constraints = constraints;
@@ -2721,7 +2668,7 @@ YUI.add('juju-models', function(Y) {
         cpuPower: 'cpu-power',
         disk: 'root-disk'
       };
-      Object.keys(constraints).forEach(key => {
+      Object.keys(constraints || {}).forEach(key => {
         if (key === 'availabilityZone') {
           // We do not want to export the availability-zone in the bundle
           // export because it makes the bundles less sharable.
