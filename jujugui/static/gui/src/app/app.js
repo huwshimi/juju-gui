@@ -1000,13 +1000,11 @@ YUI.add('juju-gui', function(Y) {
       };
 
       const navigateUserAccount = () => {
-        const auth = this._getAuth();
-        if (!auth) {
-          return;
-        }
-        views.utils.showAccount(
-          this.env && this.env.get('ecs'),
-          this.state.changeState.bind(this.state));
+        this.state.changeState({
+          profile: null,
+          root: 'account',
+          store: null
+        });
       };
       ReactDOM.render(<window.juju.components.UserMenu
         controllerAPI={controllerAPI}
@@ -1161,6 +1159,7 @@ YUI.add('juju-gui', function(Y) {
           acl={this.acl}
           addNotification={this.db.notifications.add.bind(
               this.db.notifications)}
+          changeState={this.state.changeState.bind(this.state)}
           generateCloudCredentialName={views.utils.generateCloudCredentialName}
           getUser={this.payment && this.payment.getUser.bind(this.payment)}
           getCloudCredentialNames={
@@ -2141,6 +2140,7 @@ YUI.add('juju-gui', function(Y) {
     */
     _clearRoot: function(state, next) {
       this._clearCharmbrowser(state, next);
+      this._clearAccount(state, next);
       this._clearLogin(state, next);
       next();
     },

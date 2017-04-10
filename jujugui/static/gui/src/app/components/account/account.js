@@ -26,6 +26,7 @@ YUI.add('account', function() {
     propTypes: {
       acl: React.PropTypes.object.isRequired,
       addNotification: React.PropTypes.func.isRequired,
+      changeState: React.PropTypes.func.isRequired,
       generateCloudCredentialName: React.PropTypes.func.isRequired,
       getCloudCredentialNames: React.PropTypes.func.isRequired,
       getCloudProviderDetails: React.PropTypes.func.isRequired,
@@ -38,6 +39,17 @@ YUI.add('account', function() {
       user: React.PropTypes.string.isRequired,
       userInfo: React.PropTypes.object.isRequired,
       validateForm: React.PropTypes.func.isRequired
+    },
+
+    /**
+      Close the account page.
+
+      @method _close
+    */
+    _close: function() {
+      this.props.changeState({
+        root: null
+      });
     },
 
     /**
@@ -68,6 +80,13 @@ YUI.add('account', function() {
           visible={true}>
           <div className="twelve-col">
             <div className="inner-wrapper">
+              <div className="account__close-wrapper">
+                <div className="account__close"
+                  onClick={this._close}>
+                  <juju.components.SvgIcon name="close_16"
+                    size="20" />
+                </div>
+              </div>
               <juju.components.UserProfileHeader
                 avatar=""
                 links={links}
@@ -99,6 +118,7 @@ YUI.add('account', function() {
     'account-credentials',
     'account-payment-method',
     'panel-component',
+    'svg-icon',
     'user-profile-header'
   ]
 });

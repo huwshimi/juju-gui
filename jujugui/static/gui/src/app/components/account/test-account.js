@@ -48,6 +48,7 @@ describe('Account', () => {
       <juju.components.Account
         acl={acl}
         addNotification={addNotification}
+        changeState={sinon.stub()}
         generateCloudCredentialName={generateCloudCredentialName}
         getCloudCredentialNames={getCloudCredentialNames}
         getCloudProviderDetails={getCloudProviderDetails}
@@ -60,6 +61,7 @@ describe('Account', () => {
         user="spinach@external"
         userInfo={userInfo}
         validateForm={validateForm} />, true);
+    const instance = component.getMountedInstance();
     const output = component.getRenderOutput();
     const links = [{
       label: 'Primary account'
@@ -70,6 +72,13 @@ describe('Account', () => {
         visible={true}>
         <div className="twelve-col">
           <div className="inner-wrapper">
+            <div className="account__close-wrapper">
+              <div className="account__close"
+                onClick={instance._close}>
+                <juju.components.SvgIcon name="close_16"
+                  size="20" />
+              </div>
+            </div>
             <juju.components.UserProfileHeader
               avatar=""
               links={links}
@@ -98,63 +107,53 @@ describe('Account', () => {
   });
 
   it('can render without payments', () => {
-    const userInfo = {profile: 'spinach'};
-    const getUser = sinon.stub();
-    const addNotification = sinon.stub();
-    const generateCloudCredentialName = sinon.stub();
-    const getCloudCredentialNames = sinon.stub();
-    const getCloudProviderDetails = sinon.stub();
-    const listClouds = sinon.stub();
-    const revokeCloudCredential = sinon.stub();
-    const updateCloudCredential = sinon.stub();
-    const validateForm = sinon.stub();
-    const sendAnalytics = sinon.stub();
     const component = jsTestUtils.shallowRender(
       <juju.components.Account
         acl={acl}
-        addNotification={addNotification}
-        generateCloudCredentialName={generateCloudCredentialName}
-        getCloudCredentialNames={getCloudCredentialNames}
-        getCloudProviderDetails={getCloudProviderDetails}
-        getUser={getUser}
-        listClouds={listClouds}
-        revokeCloudCredential={revokeCloudCredential}
-        updateCloudCredential={updateCloudCredential}
-        sendAnalytics={sendAnalytics}
+        addNotification={sinon.stub()}
+        changeState={sinon.stub()}
+        generateCloudCredentialName={sinon.stub()}
+        getCloudCredentialNames={sinon.stub()}
+        getCloudProviderDetails={sinon.stub()}
+        getUser={sinon.stub()}
+        listClouds={sinon.stub()}
+        revokeCloudCredential={sinon.stub()}
+        updateCloudCredential={sinon.stub()}
+        sendAnalytics={sinon.stub()}
         showPay={false}
         user="spinach@external"
-        userInfo={userInfo}
-        validateForm={validateForm} />, true);
+        userInfo={sinon.stub()}
+        validateForm={sinon.stub()} />, true);
     const output = component.getRenderOutput();
-    const links = [{
-      label: 'Primary account'
-    }];
-    const expected = (
-      <juju.components.Panel
-        instanceName="account"
-        visible={true}>
-        <div className="twelve-col">
-          <div className="inner-wrapper">
-            <juju.components.UserProfileHeader
-              avatar=""
-              links={links}
-              userInfo={userInfo} />
-            <juju.components.AccountCredentials
-              acl={acl}
-              addNotification={addNotification}
-              generateCloudCredentialName={generateCloudCredentialName}
-              getCloudCredentialNames={getCloudCredentialNames}
-              getCloudProviderDetails={getCloudProviderDetails}
-              listClouds={listClouds}
-              revokeCloudCredential={revokeCloudCredential}
-              sendAnalytics={sendAnalytics}
-              updateCloudCredential={updateCloudCredential}
-              username="spinach@external"
-              validateForm={validateForm} />
-            {null}
-          </div>
-        </div>
-      </juju.components.Panel>);
-    expect(output).toEqualJSX(expected);
+    assert.isNull(
+      output.props.children.props.children.props.children[3]);
+  });
+
+  it('can close the account page', () => {
+    const changeState = sinon.stub();
+    const component = jsTestUtils.shallowRender(
+      <juju.components.Account
+        acl={acl}
+        addNotification={sinon.stub()}
+        changeState={changeState}
+        generateCloudCredentialName={sinon.stub()}
+        getCloudCredentialNames={sinon.stub()}
+        getCloudProviderDetails={sinon.stub()}
+        getUser={sinon.stub()}
+        listClouds={sinon.stub()}
+        revokeCloudCredential={sinon.stub()}
+        updateCloudCredential={sinon.stub()}
+        sendAnalytics={sinon.stub()}
+        showPay={false}
+        user="spinach@external"
+        userInfo={sinon.stub()}
+        validateForm={sinon.stub()} />, true);
+    const output = component.getRenderOutput();
+    output.props.children.props.children.props.children[0].props.children
+      .props.onClick();
+    assert.equal(changeState.callCount, 1);
+    assert.deepEqual(changeState.args[0][0], {
+      root: null
+    });
   });
 });

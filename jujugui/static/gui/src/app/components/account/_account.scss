@@ -11,4 +11,16 @@
       font-size: $base;
     }
   }
+
+  &__close-wrapper {
+    position: relative;
+  }
+
+  &__close {
+    position: absolute;
+    z-index: 1;
+    top: -10px;
+    right: 20px;
+    cursor: pointer;
+  }
 }
