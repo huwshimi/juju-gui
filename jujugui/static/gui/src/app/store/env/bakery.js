@@ -689,7 +689,22 @@ YUI.add('juju-env-bakery', function(Y) {
        @return {undefined} Nothing.
       */
       _defaultVisitMethod: function(response) {
-        window.open(response.Info.VisitURL, 'Login');
+        const url = response.Info.VisitURL;
+        const notification = document.createElement('div');
+        notification.setAttribute('id', 'login-notification');
+        const message = document.createTextNode('Check your popups or ');
+        notification.appendChild(message);
+        const link = document.createElement('a');
+        const text = document.createTextNode('click here to login.');
+        link.appendChild(text);
+        link.href = url;
+        link.target = '_blank';
+        link.addEventListener('click', () => {
+          notification.remove();
+        });
+        notification.appendChild(link);
+        document.body.appendChild(notification);
+        window.open(url, 'Login');
       },
 
       /**
