@@ -5,6 +5,7 @@ const PropTypes = require('prop-types');
 const React = require('react');
 const shapeup = require('shapeup');
 
+const BasicTable = require('../../basic-table/basic-table');
 const ButtonRow = require('../../button-row/button-row');
 const DeploymentCloud = require('../../deployment-flow/cloud/cloud');
 const DeploymentCredentialAdd = require('../../deployment-flow/credential/add/add');
@@ -211,34 +212,36 @@ class AccountCredentials extends React.Component {
         disabled: credential.cloud === LOCAL_CLOUD,
         action: this._handleEditCredential.bind(this, credential.id)
       }];
-      return (
-        <li className="user-profile__list-row twelve-col"
-          key={credential.id}>
-          <span className="six-col user-profile__list-col">
-            {credential.name}
-          </span>
-          <span className="three-col user-profile__list-col">
-            {title}
-          </span>
-          <span className="three-col last-col user-profile__list-col no-margin-bottom">
-            <ButtonRow buttons={buttons} />
-          </span>
-          {this._generateEditCredentials(credential)}
-        </li>);
+      return {
+        columns: [{
+          content: credential.name,
+          columnSize: 6
+        }, {
+          content: title,
+          columnSize: 5
+        }, {
+          content: (<ButtonRow buttons={buttons} />),
+          columnSize: 1
+        }],
+        expandedContent: this._generateEditCredentials(credential),
+        key: credential.id
+      };
     });
     if (credentialsList.length > 0) {
       return (
-        <ul className="user-profile__list twelve-col">
-          <li className="user-profile__list-header twelve-col">
-            <span className="six-col user-profile__list-col">
-              Name
-            </span>
-            <span className="six-col last-col user-profile__list-col">
-              Provider
-            </span>
-          </li>
-          {credentialsList}
-        </ul>);
+        <BasicTable
+          headerClasses={['profile__entity-table-header-row']}
+          headerColumnClasses={['profile__entity-table-header-column']}
+          headers={[{
+            content: 'Name',
+            columnSize: 6
+          }, {
+            content: 'Provider',
+            columnSize: 6
+          }]}
+          rowClasses={['profile__entity-table-row']}
+          rowColumnClasses={['profile__entity-table-column']}
+          rows={credentialsList} />);
     } else {
       return (
         <div>
@@ -345,18 +348,15 @@ class AccountCredentials extends React.Component {
     @return {Array} The elements for the edit credential UI.
   */
   _generateEditCredentials(credential) {
-    const credentialId = this.state.editCredential;
-    if (credentialId && credentialId === credential.id) {
-      const cloud = this.state.clouds[credential.cloud];
-      return ([
-        this._generateDeploymentCloud({cloud}),
-        this._generateDeploymentCredentialAdd({
-          cloud,
-          name: credential.name,
-          close: this._handleEditCredential.bind(this)
-        })
-      ]);
-    }
+    const cloud = this.state.clouds[credential.cloud];
+    return ([
+      this._generateDeploymentCloud({cloud}),
+      this._generateDeploymentCredentialAdd({
+        cloud,
+        name: credential.name,
+        close: this._handleEditCredential.bind(this)
+      })
+    ]);
   }
 
   /**
@@ -388,6 +388,7 @@ class AccountCredentials extends React.Component {
 
   render() {
     const clouds = this.state.clouds;
+    const credentials = this.state.credentials;
     let addButton = (
       <GenericButton
         action={this._toggleAdd.bind(this)}
@@ -399,13 +400,14 @@ class AccountCredentials extends React.Component {
     }
     return (
       <div className="account__section account__credentials twelve-col">
-        <div className="user-profile__header twelve-col no-margin-bottom">
-          <div className="left">
-            Cloud credentials
-          </div>
-          <div className="right">
-            {addButton}
-          </div>
+        <div className="account__credentials-header twelve-col">
+          {addButton}
+          <h2 className="profile__title">
+            My credentials
+            <span className="profile__title-count">
+              ({credentials ? credentials.length : 0})
+            </span>
+          </h2>
         </div>
         {this._generateAddCredentials()}
         {this._generateCredentials()}
